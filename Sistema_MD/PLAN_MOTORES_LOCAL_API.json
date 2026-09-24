@@ -1,0 +1,877 @@
+{
+  "artifact_type": "research_and_proposed_implementation_plan",
+  "schema_version": 1,
+  "date": "2026-09-20",
+  "author": "Codex; GPT-6 per environment; exact variant unverified",
+  "review_mode": "review_not_blind",
+  "is_runtime_configuration": false,
+  "project_root": "C:\\Users\\USUARIO_ORIGEN\\Documents\\Codex\\2026-09-10\\realtime-voice-chat\\sistema_conversion",
+  "user_decisions": {
+    "provenance": "user_confirmed",
+    "local_and_remote_api": true,
+    "commercial_distribution": true,
+    "equal_priority": [
+      "construction_documents",
+      "books_and_articles"
+    ],
+    "outputs": [
+      "markdown",
+      "structured_json"
+    ],
+    "format_anatomy_required": true,
+    "navigable_interface_and_diagnostics": true
+  },
+  "architecture_recommendation": {
+    "provenance": "inference_and_proposal",
+    "product_count": 1,
+    "visible_modes": [
+      "local",
+      "api"
+    ],
+    "shared_components": [
+      "catalog",
+      "document_contract",
+      "queue",
+      "library",
+      "reviewer",
+      "diagnostics",
+      "tests"
+    ],
+    "execution": "isolated_versioned_workers",
+    "local_to_remote_silent_fallback": false,
+    "core": "retain_python",
+    "ui": "evaluate_typescript_desktop_against_pyside",
+    "java": "optional_tika_worker_only_if_measured_value"
+  },
+  "environment_observed": {
+    "python": "3.13.14",
+    "gpu": "NVIDIA GeForce RTX 3060",
+    "vram_mib": 12288,
+    "physical_ram_gib": null,
+    "ram_observation": "CIM query denied; not measured",
+    "installed_in_inspected_interpreter": {
+      "markitdown": "0.1.6",
+      "marker-pdf": "1.10.2",
+      "torch": "2.6.0+cu124",
+      "pymupdf": "1.27.2.3"
+    },
+    "not_found_in_inspected_interpreter": [
+      "docling",
+      "docling-core",
+      "mineru"
+    ]
+  },
+  "engine_candidates": [
+    {
+      "name": "Docling",
+      "observed_release": "2.129.0",
+      "role": "first_structured_local_pilot",
+      "benchmark_run": false
+    },
+    {
+      "name": "MarkItDown",
+      "observed_release": "0.1.7",
+      "role": "selected_lightweight_routes",
+      "benchmark_run": false,
+      "offline_caveat": "installed audio path calls recognize_google"
+    },
+    {
+      "name": "Marker",
+      "observed_release": "2.0.0",
+      "role": "alternative_for_difficult_pages",
+      "benchmark_run": false,
+      "commercial_caveat": "installed 1.10.2 licensing differs from current release; weights separate"
+    },
+    {
+      "name": "MinerU",
+      "observed_release": "4.0.4",
+      "role": "version_pinned_alternative",
+      "benchmark_run": false,
+      "commercial_caveat": "code and exact model bundle must both be reviewed"
+    }
+  ],
+  "provider_plan": {
+    "existing": [
+      "Gemini",
+      "DeepSeek"
+    ],
+    "proposed": [
+      "OpenAI",
+      "Anthropic",
+      "Qwen / Model Studio"
+    ],
+    "capabilities": "verify_per_model_endpoint_region",
+    "claude_code_is_not_claude_api": true
+  },
+  "gaps": [
+    {
+      "id": "H01",
+      "priority": "P0",
+      "evidence_class": "P0, bug reproducido",
+      "evidence": "`documents.py:121/170`: documento sin `title` y heading nivel 42 pasa `structural_ok`; render lanza `KeyError`",
+      "proposed_fix_and_exit_test": "Validar contrato completo antes de publicar. Rechazar ausencias/tipos/niveles incorrectos y conservar control válido",
+      "status": "open"
+    },
+    {
+      "id": "H02",
+      "priority": "P0",
+      "evidence_class": "P0, bug reproducido",
+      "evidence": "`native.py:469/475/481`: 2 cajas PPT con texto y un conector dan `slides_flagged=[]`; se pierde la relación sin aviso",
+      "proposed_fix_and_exit_test": "Inventario visual independiente del texto y conectores explícitos. Control con diagrama debe preservar relación o marcarla pendiente",
+      "status": "open"
+    },
+    {
+      "id": "H03",
+      "priority": "P0",
+      "evidence_class": "P0, bug reproducido",
+      "evidence": "`native.py:94/127`: rama de Excel grande accede a `EmptyCell.column`",
+      "proposed_fix_and_exit_test": "Iterar por posición/coordenada segura. Libro con A1/C1 y B1 vacía debe salir sin error, con contenido/fórmulas intactos",
+      "status": "open"
+    },
+    {
+      "id": "H04",
+      "priority": "P1",
+      "evidence_class": "P1, brecha de modo",
+      "evidence": "No hay política integral offline para motores nuevos; MarkItDown audio tiene ruta remota",
+      "proposed_fix_and_exit_test": "Registro de capacidades, activos preparados, red denegada en control aislado. Cero conexiones salientes; faltante falla de forma clara",
+      "status": "open"
+    },
+    {
+      "id": "H05",
+      "priority": "P1",
+      "evidence_class": "P1, integración ausente",
+      "evidence": "Cuatro bibliotecas sin adaptador en el programa; versiones y dependencias incompatibles",
+      "proposed_fix_and_exit_test": "Protocolo de worker y entornos aislados. Control conocido por versión/modelo y exportación doble desde una ejecución",
+      "status": "open"
+    },
+    {
+      "id": "H06",
+      "priority": "P1",
+      "evidence_class": "P1, contrato parcial",
+      "evidence": "`documents.py:11/92`, `jobs.py:48`: bloques con cadenas MD; Excel tiene estructura adicional",
+      "proposed_fix_and_exit_test": "JSON común versionado con tablas/figuras/relaciones y localizadores. Migración de lectura conserva paquetes v1 y normalización registra pérdidas",
+      "status": "open"
+    },
+    {
+      "id": "H07",
+      "priority": "P1",
+      "evidence_class": "P1, límite conocido",
+      "evidence": "`pipeline.py:329/341`: texto sin ordenar + PNG; OCR y semántica pendientes",
+      "proposed_fix_and_exit_test": "Ruta PDF por página/región: digital, escaneada, mixta, columnas, fórmulas y tabla multipágina. Sin páginas omitidas ni orden roto en controles",
+      "status": "open"
+    },
+    {
+      "id": "H08",
+      "priority": "P1",
+      "evidence_class": "P1, canales incompletos",
+      "evidence": "`native.py:195/221/448`, ACOPLAMIENTO: Word/PPT visual, vínculos de imágenes y Office antiguo pendientes",
+      "proposed_fix_and_exit_test": "Inventario de canales presentes/extraídos/omitidos; adaptadores nativos + render selectivo. Control con notas/pies/comentarios/SmartArt y legacy",
+      "status": "open"
+    },
+    {
+      "id": "H09",
+      "priority": "P1",
+      "evidence_class": "P1, límite de dominio",
+      "evidence": "Visio y CAD requieren relaciones/geometría; los cuatro motores no los sustituyen",
+      "proposed_fix_and_exit_test": "Mantener grafo, conectores, unidades, referencias e imágenes. No presentar longitudes aproximadas como metrado certificado",
+      "status": "open"
+    },
+    {
+      "id": "H10",
+      "priority": "P1",
+      "evidence_class": "P1, evaluación pendiente",
+      "evidence": "Historial registra falsos positivos del medidor; `semantic=False` en contrato actual",
+      "proposed_fix_and_exit_test": "Corpus oro y validadores por familia, con controles sanos/adversos. Medir falsas alarmas y errores no detectados, además de exactitud",
+      "status": "open"
+    },
+    {
+      "id": "H11",
+      "priority": "P1",
+      "evidence_class": "P1, diagnóstico parcial",
+      "evidence": "`diagnostics.py:38/113/176`: resolución por evidencia textual; OK global no incorpora por sí mismo fallos abiertos",
+      "proposed_fix_and_exit_test": "Separar entorno/ejecución/contenido; paquete de reproducción y prueba enlazada por hash. Recurrencia reabre; no cerrar por texto libre solamente",
+      "status": "open"
+    },
+    {
+      "id": "H12",
+      "priority": "P1",
+      "evidence_class": "P1, proveedores parciales",
+      "evidence": "Hay Gemini/DeepSeek y dos CLI; faltan OpenAI/Anthropic/Qwen y ensayos reales de varias rutas",
+      "proposed_fix_and_exit_test": "Adaptadores propios, capacidades verificadas por modelo y presupuesto. Control sintético por proveedor y comportamiento correcto con 401/429/timeout/JSON truncado",
+      "status": "open"
+    },
+    {
+      "id": "H13",
+      "priority": "P1",
+      "evidence_class": "P1, operación por ampliar",
+      "evidence": "Cola actual persiste, pero faltan política GPU y firmas de los modelos locales nuevos",
+      "proposed_fix_and_exit_test": "Un trabajador GPU pesado inicial, backpressure, límites por pieza, caché por configuración y métricas. Corte/reanudación sin duplicar trabajo válido",
+      "status": "open"
+    },
+    {
+      "id": "H14",
+      "priority": "P2",
+      "evidence_class": "P2, distribución pendiente",
+      "evidence": "No hay instalador autocontenido ni segunda PC validada; licencias por bundle no resueltas",
+      "proposed_fix_and_exit_test": "Manifiesto de versiones/pesos/licencias, doctor funcional y paquete reproducible. Mismo control en segunda PC, offline y sin entorno de desarrollo",
+      "status": "open"
+    },
+    {
+      "id": "H15",
+      "priority": "P1",
+      "evidence_class": "P1, catálogo fragmentado",
+      "evidence": "`workflow.py:16/39/133`, `pipeline.py:29/40/50/53`: imágenes y formatos de texto estructurado detectados sin ruta; EPUB queda ZIP; RTF/HTM pueden conservar código bruto como texto. Las skills externas no están integradas",
+      "proposed_fix_and_exit_test": "Registro único por familia/subtipo para detector, router, UI, CLI y documentación. Fixtures de extensión disfrazada, EPUB, RTF, XML Excel y TIFF multipágina llegan al adaptador correcto o a pendiente explícito",
+      "status": "open"
+    }
+  ],
+  "commercial_launch_criteria": [
+    {
+      "id": "C01",
+      "title": "Licencias y componentes distribuibles",
+      "requirements_markdown": "Crear SBOM con paquetes transitivos, binarios, pesos, fuentes, hashes, licencias y atribuciones. Resolver distribución de la aplicación y de cada motor por separado. **PyMuPDF ya está en el programa y usa licencia dual AGPL/comercial**: para un producto cerrado hay que evaluar la licencia comercial o una alternativa compatible y volver a probar el render/extracción. AGPL no equivale a prohibición de cobrar; las obligaciones dependen de la distribución elegida. [PyMuPDF oficial](https://pymupdf.readthedocs.io/en/latest/faq/index.html).\n\nLa licencia exacta de Marker se documenta en §5. MinerU cambia por versión y pesos: no usar la licencia de un modelo Pro para justificar otro bundle. Docling/MarkItDown MIT no convierte todas sus dependencias en MIT. ODA File Converter está instalado como aplicación auxiliar: no hay evidencia en esta investigación de derechos para redistribuir ese ejecutable dentro de nuestro instalador; los SDK tienen sus propias condiciones. [ODA utilidades](https://www.opendesign.com/faq/question/what-are-oda-viewer-and-oda-file-converter), [licenciamiento SDK](https://www.opendesign.com/pricing).\n\n**Aceptación:** lista exacta del instalador con derechos/obligaciones resueltos por versión; ningún peso se incluye solo porque es descargable. Decisión comercial pendiente: cerrado, abierto o combinación con componentes/licencias comerciales. La revisión de obligaciones del producto final requiere confirmación competente; este estudio identifica condiciones documentadas, no emite una autorización jurídica.",
+      "sources": [
+        "https://pymupdf.readthedocs.io/en/latest/faq/index.html",
+        "https://www.opendesign.com/faq/question/what-are-oda-viewer-and-oda-file-converter",
+        "https://www.opendesign.com/pricing"
+      ],
+      "status": "not_validated_for_launch"
+    },
+    {
+      "id": "C02",
+      "title": "Navegación y revisión como núcleo del producto",
+      "requirements_markdown": "AutoCAD documenta recientes, fijados, lista/cuadrícula, búsqueda y orden. Windows recomienda navegación estable y lista/detalle. Aplicación: **Inicio, Biblioteca, Cola, Revisar, Motores e IA, Diagnóstico**; recuperar filtros, selección y documentos abiertos. Priorizar trabajo y resultados sobre tarjetas decorativas. [AutoCAD](https://help.autodesk.com/cloudhelp/2025/ENU/AutoCAD-WhatsNew/files/GUID-3EB7B2CB-C04B-4F24-AE5E-0EC8CDA37728.htm), [navegación Windows](https://learn.microsoft.com/en-us/windows/apps/design/basics/navigation-basics).\n\nDentro del documento: original o recorte a la izquierda; Lectura/MD/JSON a la derecha; unidad y bloque enlazados; panel de dudas con acción concreta. La comparación sincronizada solo se ofrece donde exista correspondencia. Para tablas grandes usar virtualización/paginación de vista conservando datos, búsqueda y exportación completa. Para libros: árbol de capítulos, navegación y búsqueda contextual. Para obra: hojas, planos, códigos, revisión y procedencia.\n\n**Aceptación:** un usuario puede agregar un archivo, interpretar progreso, abrir resultado, localizar una duda, volver a la fuente y exportar MD/JSON sin instrucciones del desarrollador. Probar teclado, Narrador, alto contraste y escalados; no codificar estado solo con color. [Accesibilidad Windows](https://learn.microsoft.com/en-us/windows/apps/develop/accessibility).\n\nLa interfaz actual fue inspeccionada en código, no evaluada visualmente con usuarios en esta sesión: Tkinter/ttk, cuatro pestañas y progreso indeterminado. La maqueta nueva es exploración, no implementación ni prueba de usabilidad. Mantener el núcleo Python independiente de la futura interfaz; evaluar PySide/Qt, Tauri u otra opción con requisitos reales antes de decidir el stack y sus licencias.",
+      "sources": [
+        "https://help.autodesk.com/cloudhelp/2025/ENU/AutoCAD-WhatsNew/files/GUID-3EB7B2CB-C04B-4F24-AE5E-0EC8CDA37728.htm",
+        "https://learn.microsoft.com/en-us/windows/apps/design/basics/navigation-basics",
+        "https://learn.microsoft.com/en-us/windows/apps/develop/accessibility"
+      ],
+      "status": "not_validated_for_launch"
+    },
+    {
+      "id": "C03",
+      "title": "Progreso honesto y recuperación",
+      "requirements_markdown": "Mostrar fase, unidad actual, unidades completas, transcurrido, estado del motor y qué se conservó. Porcentaje solo con denominador conocido; no inventar tiempo restante. La interfaz debe continuar navegable. Cancelar detiene con política explícita y conserva trabajo; pausa se ofrece solo donde exista checkpoint real. [Progreso Windows](https://learn.microsoft.com/en-us/windows/apps/develop/ui/controls/progress-controls).\n\nError accionable: «No se pudo leer la página 18; se conservaron 17. Abrir original / Ver detalle / Reintentar con alcance explícito». Error y parcial no significan lo mismo. [InfoBar](https://learn.microsoft.com/en-us/windows/apps/develop/ui/controls/infobar).\n\n**Aceptación:** inyectar fallo en una página de fixture y cierre del worker; se conserva lo completo, no se duplica lo facturable y el usuario puede localizar lo pendiente. Coste desconocido no se convierte en cero.",
+      "sources": [
+        "https://learn.microsoft.com/en-us/windows/apps/develop/ui/controls/infobar",
+        "https://learn.microsoft.com/en-us/windows/apps/develop/ui/controls/progress-controls"
+      ],
+      "status": "not_validated_for_launch"
+    },
+    {
+      "id": "C04",
+      "title": "Instalación y actualización con identidad",
+      "requirements_markdown": "Autodesk publica administración de versiones, extensiones y despliegues; Access centraliza actualizaciones. Adaptación: motor, modelos y aplicación separados, manifiestos de compatibilidad y avisos de tamaño/licencia antes de descargar. MSIX es candidato sujeto a compatibilidad COM/runtimes, no una elección ya aplicada. [Despliegues Autodesk](https://www.autodesk.com/support/download-install/admins/account-deploy/deploy-from-autodesk-account), [manifiestos de plugins](https://help.autodesk.com/cloudhelp/2026/ENU/AutoCAD-Customization/files/GUID-BC76355D-682B-46ED-B9B7-66C95EEF2BD0.htm).\n\nFirma del editor, sello de tiempo, hashes y validación antes de activar; actualizaciones fuera de trabajos activos; rollback controlado y migraciones de datos reversibles o con respaldo. Firma no garantiza ausencia de bugs ni reputación SmartScreen inmediata. [Firma MSIX](https://learn.microsoft.com/en-us/windows/msix/package/sign-msix-package-guide), [actualizaciones](https://learn.microsoft.com/en-us/windows/msix/app-installer/update-settings).\n\n**Aceptación:** instalación limpia en segunda PC, paquete manipulado rechazado, corte durante actualización recuperable, editor visible, documentos/configuración preservados, desinstalación con elección explícita sobre datos del usuario. Núcleo arranca sin descargar modelos que no se necesitan.",
+      "sources": [
+        "https://help.autodesk.com/cloudhelp/2026/ENU/AutoCAD-Customization/files/GUID-BC76355D-682B-46ED-B9B7-66C95EEF2BD0.htm",
+        "https://learn.microsoft.com/en-us/windows/msix/app-installer/update-settings",
+        "https://learn.microsoft.com/en-us/windows/msix/package/sign-msix-package-guide",
+        "https://www.autodesk.com/support/download-install/admins/account-deploy/deploy-from-autodesk-account"
+      ],
+      "status": "not_validated_for_launch"
+    },
+    {
+      "id": "C05",
+      "title": "Amenazas de documentos y separación de procesos",
+      "requirements_markdown": "Mapear documento → parser → modelo → normalizador → visor, más claves, COM, actualizador y posible servidor local. Documentos y salidas de IA son datos sin permiso para ejecutar herramientas, macros o instrucciones. Ampliar los controles ya existentes de firma, ZIP y CSP: rutas de escape, enlaces/symlinks, XML expansivo, límites de memoria/tiempo/píxeles, recursos externos y archivos dañados. Procesos/venv separados son aislamiento de fallos/dependencias, **no sandbox de seguridad del sistema operativo**. [OWASP amenazas](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html), [archivos](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html), [instrucciones maliciosas](https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html).\n\n**Aceptación:** corpus sintético adverso no ejecuta macros, no escribe fuera del destino, no carga URLs ocultas y no derriba el proceso de interfaz. Cada worker opera con permisos mínimos y límites comprobados; si se utiliza HTTP local, autenticación/origen/puerto y autorización de rutas deben probarse. No se cambió seguridad de Windows durante este estudio.",
+      "sources": [
+        "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html",
+        "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html",
+        "https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html"
+      ],
+      "status": "not_validated_for_launch"
+    },
+    {
+      "id": "C06",
+      "title": "Claves, privacidad y licencia de la aplicación",
+      "requirements_markdown": "BYOK: claves por usuario mediante Credential Manager/DPAPI, nunca en proyectos, logs, prompts, línea de comandos o paquete de soporte. Borrar/reemplazar credencial debe ser visible. DPAPI protege almacenamiento, no todo proceso comprometido del mismo usuario. [DPAPI](https://learn.microsoft.com/en-us/windows/win32/api/dpapi/nf-dpapi-cryptprotectdata), [gestión de secretos](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html).\n\nSeparar cuatro políticas: envío documental, telemetría, actualizaciones y activación de licencia. Autodesk documenta conectividad inicial y periodos offline para ciertas licencias; eso es una referencia de comunicación, no la política que debamos copiar. Si ofrecemos trabajo permanentemente desconectado, una licencia firmada local y paquetes offline son alternativas, con revocación más lenta y soporte más difícil. Ningún DRM local es invulnerable. [Autorización Autodesk](https://www.autodesk.com/support/account/admin/licensing-faq/authorization).\n\n**Aceptación:** clave señuelo ausente de exportaciones/diagnóstico; usuario ve quién recibe qué; conversión Local funciona con red denegada bajo la política contratada; ninguna telemetría documental oculta. Definir retención/borrado de temporales, exportación y privacidad antes de vender. No recolectar documentos para mejorar el producto sin una autorización separada.",
+      "sources": [
+        "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html",
+        "https://learn.microsoft.com/en-us/windows/win32/api/dpapi/nf-dpapi-cryptprotectdata",
+        "https://www.autodesk.com/support/account/admin/licensing-faq/authorization"
+      ],
+      "status": "not_validated_for_launch"
+    },
+    {
+      "id": "C07",
+      "title": "Resiliencia y soporte basados en evidencia",
+      "requirements_markdown": "Netflix publica patrones de timeouts, aislamiento de recursos, interrupción temporal de servicios fallidos, observabilidad y experimentos controlados. Hystrix está en mantenimiento: adoptar principios, no agregarlo como nueva dependencia. Para escritorio sirven workers limitados, cola durable, healthchecks, proveedores desacoplados y pruebas de corte con fixtures. [Hystrix](https://github.com/Netflix/Hystrix), [funcionamiento](https://github.com/Netflix/Hystrix/wiki/How-it-Works), [Atlas](https://netflix.github.io/atlas-docs/overview/).\n\nPaquete de soporte mínimo y revisable: ID de trabajo, versiones, fase, tiempos, memoria y código de error; sin texto de documentos/secretos por defecto. Incorporar disclosure de vulnerabilidades, versiones soportadas, registro de cambios y proceso de corrección. La telemetría local puede existir sin telemetría remota. [Logging OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html).\n\n**Aceptación:** soporte distingue falta de modelo, error parser, GPU y API con un paquete saneado; fallo no se propaga a toda la cola. Antes de activar una corrección, pasan regresiones y se conserva versión anterior recuperable.",
+      "sources": [
+        "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+        "https://github.com/Netflix/Hystrix",
+        "https://github.com/Netflix/Hystrix/wiki/How-it-Works",
+        "https://netflix.github.io/atlas-docs/overview/"
+      ],
+      "status": "not_validated_for_launch"
+    },
+    {
+      "id": "C08",
+      "title": "Lanzamiento medible y alcance comercial",
+      "requirements_markdown": "Primera versión comercial candidata: Windows, documentos individuales/carpetas, núcleo Local probado, BYOK por proveedores habilitados, MD/JSON, biblioteca/revisión, diagnóstico y actualización firmada. Audio/video, colaboración multiusuario, facturación integrada, marketplace y sincronización cloud son ampliaciones con validación propia; no se anuncian como soportadas solo por existir una dependencia.\n\nDefinir edición/licencia de la aplicación, costes propios de soporte y distribución de modelos, garantía de compatibilidad y política offline. BYOK significa que el cliente paga directamente el consumo de su proveedor cuando corresponda; no mezclar ese gasto con nuestra licencia. Disponibilidad de adaptadores no garantiza disponibilidad mundial de todos los proveedores.\n\n**Aceptación:** matriz pública por versión de formatos/subtipos/limitaciones, prueba de segunda PC y usuarios, SBOM aprobado, controles de seguridad y recuperación, política de privacidad/licencia/actualización documentada y resultados del piloto equilibrado. Estas puertas refinan H04–H14; no se cuentan como defectos adicionales descubiertos en el código.",
+      "sources": [],
+      "status": "not_validated_for_launch"
+    }
+  ],
+  "phases": [
+    {
+      "id": "F1",
+      "title": "F1 — estabilizar",
+      "deliverable": "Corregir H01–H03 y agregar sus regresiones",
+      "exit_condition": "Contratos y tipos; controles sanos/adversos pasan y suite existente sin regresiones",
+      "status": "proposed"
+    },
+    {
+      "id": "F2",
+      "title": "F2 — contrato/doctor",
+      "deliverable": "JSON v2 propuesto, catálogo ejecutable de formatos y canales, migración de lectura, diagnóstico con estados separados",
+      "exit_condition": "Representación y procedencia; fixtures v1 siguen legibles, todas las referencias resuelven y el router coincide con la cobertura publicada",
+      "status": "proposed"
+    },
+    {
+      "id": "F3",
+      "title": "F3 — Local inicial",
+      "deliverable": "Worker Docling aislado + extractores nativos; MarkItDown selectivo",
+      "exit_condition": "OCR/estructura y operación offline; piloto equilibrado, cero egress y recursos medidos",
+      "status": "proposed"
+    },
+    {
+      "id": "F4",
+      "title": "F4 — candidatos locales",
+      "deliverable": "Comparar Marker y MinerU en las clases donde Local inicial falla",
+      "exit_condition": "Experimento controlado; elegir por calidad/coste local, dependencias y licencia, sin convertir cuatro veces todo",
+      "status": "proposed"
+    },
+    {
+      "id": "F5",
+      "title": "F5 — API ampliada",
+      "deliverable": "Presets Gemini/DeepSeek/OpenAI/Anthropic/Qwen y comprobación de capacidades",
+      "exit_condition": "Protocolos, auth y presupuesto; pruebas simuladas y luego control real autorizado por proveedor",
+      "status": "proposed"
+    },
+    {
+      "id": "F6",
+      "title": "F6 — calidad continua",
+      "deliverable": "Casos oro, paquetes de fallo, panel de revisión y comparación de versiones",
+      "exit_condition": "Evaluación calibrada; defectos no se cierran sin prueba y recurrencia se reabre",
+      "status": "proposed"
+    },
+    {
+      "id": "F7",
+      "title": "F7 — distribución",
+      "deliverable": "Instalador o paquetes modulares, dos accesos opcionales, segunda PC y documentación",
+      "exit_condition": "Reproducibilidad; arranque y canario con/sin GPU, activos/licencias identificados",
+      "status": "proposed"
+    }
+  ],
+  "format_registry_proposal": [
+    {
+      "id": "FMT01",
+      "family": "PDF digital, escaneado y mixto",
+      "extensions_are_hints": [
+        "pdf"
+      ],
+      "status_in_current_application": "integrated_partial_pdf",
+      "anatomy_and_constraints_markdown": "**Fabricación.** Grafo de objetos, catálogo, páginas, recursos y flujos; las referencias pueden almacenarse como tablas o streams y existir actualizaciones incrementales. Además del dibujo de la página puede haber anotaciones, adjuntos, formularios y metadatos. Un parser debe resolver la revisión vigente. [Sintaxis PDF](https://pdfa.org/the-smallest-possible-valid-pdf/), [ISO 32000-2, erratas de sintaxis](https://pdf-issues.pdfa.org/32000-2-2020/clause07.html).\n\n**Texto.** Códigos y fuentes dibujan glifos; `ToUnicode` ayuda a recuperar caracteres. Ver algo correctamente no garantiza que el texto extraído sea correcto. [ISO, texto](https://pdf-issues.pdfa.org/32000-2-2020/clause09.html). Los tags pueden declarar estructura y orden; hay que contrastarlos con la página. Orden de pintado y orden de lectura no son equivalentes. [Tagged PDF](https://pdfa.org/wp-content/uploads/2023/07/Tagged-PDF-Best-Practice-Guide.pdf).\n\n**Ruta.** Diagnóstico por página y región; reutilizar texto nativo fiable; OCR solo donde falta o discrepa. Una página con imagen y texto OCR invisible exige reconciliación para evitar duplicados. «Tiene texto» no autoriza saltarse toda comprobación visual. Formularios, comentarios y adjuntos deben tener canales separados del cuerpo.\n\n**Geometría.** Guardar MediaBox/CropBox, rotación, escala y transformaciones; una simple inversión del eje Y puede situar mal el recorte. [API de página Adobe](https://opensource.adobe.com/dc-acrobat-sdk-docs/acrobatsdk/apireference/PD_Layer/PDPage.html).\n\n**Caso testigo.** Dos columnas + nota + sello escaneado + capa OCR equivocada; otra página rotada y recortada. Cierre: orden esperado, ninguna duplicación, símbolos/cifras críticos exactos, discrepancia alertada y recorte sobre la región correcta. Para un fixture geométrico controlado, tolerancia propuesta de un píxel del render, registrando su resolución. No aplicar esa tolerancia como certificación universal de OCR.",
+      "proposed_route": "Diagnóstico por página y región; reutilizar texto nativo fiable; OCR solo donde falta o discrepa. Una página con imagen y texto OCR invisible exige reconciliación para evitar duplicados. «Tiene texto» no autoriza saltarse toda comprobación visual. Formularios, comentarios y adjuntos deben tener canales separados del cuerpo.",
+      "proposed_fixture_and_exit_test": "Dos columnas + nota + sello escaneado + capa OCR equivocada; otra página rotada y recortada. Cierre: orden esperado, ninguna duplicación, símbolos/cifras críticos exactos, discrepancia alertada y recorte sobre la región correcta. Para un fixture geométrico controlado, tolerancia propuesta de un píxel del render, registrando su resolución. No aplicar esa tolerancia como certificación universal de OCR.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://opensource.adobe.com/dc-acrobat-sdk-docs/acrobatsdk/apireference/PD_Layer/PDPage.html",
+        "https://pdf-issues.pdfa.org/32000-2-2020/clause07.html",
+        "https://pdf-issues.pdfa.org/32000-2-2020/clause09.html",
+        "https://pdfa.org/the-smallest-possible-valid-pdf/",
+        "https://pdfa.org/wp-content/uploads/2023/07/Tagged-PDF-Best-Practice-Guide.pdf"
+      ]
+    },
+    {
+      "id": "FMT02",
+      "family": "Imágenes raster: PNG, JPEG, TIFF, BMP, WebP y GIF",
+      "extensions_are_hints": [
+        "png",
+        "jpg",
+        "jpeg",
+        "tif",
+        "tiff",
+        "bmp",
+        "webp",
+        "gif"
+      ],
+      "status_in_current_application": "some_signatures_detected_no_integrated_converter",
+      "anatomy_and_constraints_markdown": "**Fabricación.** Píxeles, codificación/compresión y metadatos. Diferenciar canal alfa, color, orientación, resolución y secuencias. PNG puede incluir texto auxiliar y animación: esos metadatos no son una transcripción de los píxeles. [PNG, W3C](https://www.w3.org/TR/2025/REC-png-3-20250624/).\n\nTIFF enlaza directorios IFD y puede tener páginas, miniaturas y resoluciones alternativas; no todo directorio es una página. BigTIFF tiene una estructura de offsets ampliada. [TIFF 6.0](https://www.itu.int/itudoc/itu-t/com16/tiff-fx/docs/tiff6.pdf), [LibTIFF](https://libtiff.gitlab.io/libtiff/multi_page.html), [BigTIFF](https://libtiff.gitlab.io/libtiff/specification/bigtiff.html).\n\n**Ruta.** Decodificar con límites de tamaño → inventariar páginas/fotogramas → normalizar una copia → OCR con cajas y transformaciones → análisis visual si el contenido lo necesita. Guardar la imagen original. Declarar si animación se conserva, se procesa por fotograma o queda pendiente. Cambiar el DPI declarado no crea detalle.\n\n**Caso testigo.** TIFF de tres páginas con miniaturas, imagen transparente, imagen rotada y texto diminuto. Cierre: tres páginas lógicas, orientación correcta, sin páginas perdidas ni miniaturas duplicadas; el texto no legible queda identificado. Un JPG de plano no permite recuperar precisión geométrica CAD por sí solo.",
+      "proposed_route": "Decodificar con límites de tamaño → inventariar páginas/fotogramas → normalizar una copia → OCR con cajas y transformaciones → análisis visual si el contenido lo necesita. Guardar la imagen original. Declarar si animación se conserva, se procesa por fotograma o queda pendiente. Cambiar el DPI declarado no crea detalle.",
+      "proposed_fixture_and_exit_test": "TIFF de tres páginas con miniaturas, imagen transparente, imagen rotada y texto diminuto. Cierre: tres páginas lógicas, orientación correcta, sin páginas perdidas ni miniaturas duplicadas; el texto no legible queda identificado. Un JPG de plano no permite recuperar precisión geométrica CAD por sí solo.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://libtiff.gitlab.io/libtiff/multi_page.html",
+        "https://libtiff.gitlab.io/libtiff/specification/bigtiff.html",
+        "https://www.itu.int/itudoc/itu-t/com16/tiff-fx/docs/tiff6.pdf",
+        "https://www.w3.org/TR/2025/REC-png-3-20250624/"
+      ]
+    },
+    {
+      "id": "FMT03",
+      "family": "Word DOCX",
+      "extensions_are_hints": [
+        "docx"
+      ],
+      "status_in_current_application": "native_partial",
+      "anatomy_and_constraints_markdown": "**Fabricación.** DOCX, XLSX y PPTX usan OPC: partes XML/binarias, tipos de contenido y relaciones dentro de un paquete habitualmente ZIP. Seguir relaciones/namespaces y contenido alternativo; el nombre del archivo interno no define por sí solo su orden. [ECMA-376](https://ecma-international.org/publications-and-standards/standards/ecma-376/). Un OOXML cifrado puede estar envuelto en OLE/CFB; no asumir «ZIP corrupto». [Paquete cifrado Microsoft](https://learn.microsoft.com/en-us/dotnet/api/system.io.packaging.encryptedpackageenvelope.isencryptedpackageenvelope).\n\nWord tiene cuerpo principal y otras historias: encabezados, pies, notas, comentarios y cuadros de texto. [WordprocessingML](https://learn.microsoft.com/en-us/office/open-xml/word/structure-of-a-wordprocessingml-document). Conservar revisiones y separar código de campo de resultado almacenado; pueden existir fechas/índices desactualizados. [Revisiones](https://learn.microsoft.com/en-us/office/open-xml/word/how-to-accept-all-revisions-in-a-word-processing-document), [campos](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.fieldcode).\n\n**Ruta.** Parser semántico → historias, estilos/listas, tablas, imágenes ancladas, ecuaciones y estados → render identificado para paginación/objetos flotantes. No aceptar cambios ni actualizar campos/vínculos automáticamente. La posición de un objeto en XML no sustituye su posición visual.\n\n**Caso testigo.** Documento con nota al pie, comentario, revisión pendiente, campo obsoleto, tabla anidada y ecuación. Cierre: todos los marcadores esperados, cada uno en su canal y estado; revisión eliminada no confundida con texto vigente; original intacto. DOCM/plantillas necesitarán controles adicionales aunque compartan vocabulario.",
+      "proposed_route": "Parser semántico → historias, estilos/listas, tablas, imágenes ancladas, ecuaciones y estados → render identificado para paginación/objetos flotantes. No aceptar cambios ni actualizar campos/vínculos automáticamente. La posición de un objeto en XML no sustituye su posición visual.",
+      "proposed_fixture_and_exit_test": "Documento con nota al pie, comentario, revisión pendiente, campo obsoleto, tabla anidada y ecuación. Cierre: todos los marcadores esperados, cada uno en su canal y estado; revisión eliminada no confundida con texto vigente; original intacto. DOCM/plantillas necesitarán controles adicionales aunque compartan vocabulario.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://ecma-international.org/publications-and-standards/standards/ecma-376/",
+        "https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.fieldcode",
+        "https://learn.microsoft.com/en-us/dotnet/api/system.io.packaging.encryptedpackageenvelope.isencryptedpackageenvelope",
+        "https://learn.microsoft.com/en-us/office/open-xml/word/how-to-accept-all-revisions-in-a-word-processing-document",
+        "https://learn.microsoft.com/en-us/office/open-xml/word/structure-of-a-wordprocessingml-document"
+      ]
+    },
+    {
+      "id": "FMT04",
+      "family": "Excel XLSX y XLSM",
+      "extensions_are_hints": [
+        "xlsx",
+        "xlsm"
+      ],
+      "status_in_current_application": "native_partial",
+      "anatomy_and_constraints_markdown": "**Fabricación.** Libro, hojas y relaciones; celdas tipadas, cadenas compartidas o en línea, estilos, rangos, tablas, gráficos y conexiones. [SpreadsheetML](https://learn.microsoft.com/en-us/office/open-xml/spreadsheet/structure-of-a-spreadsheetml-document). `<f>` contiene fórmula y `<v>` puede contener su resultado de la última evaluación: caché no prueba vigencia. [Fórmulas Microsoft](https://learn.microsoft.com/en-us/office/open-xml/spreadsheet/working-with-formulas).\n\n**Ruta.** Conservar dirección, tipo, valor original, fórmula, caché, formato numérico y valor presentado por separado. Inventariar hojas/filas/columnas ocultas, fusiones, nombres, comentarios, gráficos/pivots y vínculos. Área de impresión no delimita todo el libro. Render complementario para gráficos/layout; no recalcular fórmulas, ejecutar macros ni actualizar conexiones durante extracción. Recálculo sería otro derivado identificado.\n\n**Caso testigo.** Hoja oculta, fechas 1900/1904, fórmula sin caché y otra obsoleta, error, celda vacía intermedia, fusión, gráfico y XLSM con macro inactiva. Cierre: coordenadas/tipos/estados exactos; fórmula y resultado separados; todos los canales incluidos o pendientes explícitos. El caso `EmptyCell` ya está reproducido como H03; los demás son pruebas futuras.",
+      "proposed_route": "Conservar dirección, tipo, valor original, fórmula, caché, formato numérico y valor presentado por separado. Inventariar hojas/filas/columnas ocultas, fusiones, nombres, comentarios, gráficos/pivots y vínculos. Área de impresión no delimita todo el libro. Render complementario para gráficos/layout; no recalcular fórmulas, ejecutar macros ni actualizar conexiones durante extracción. Recálculo sería otro derivado identificado.",
+      "proposed_fixture_and_exit_test": "Hoja oculta, fechas 1900/1904, fórmula sin caché y otra obsoleta, error, celda vacía intermedia, fusión, gráfico y XLSM con macro inactiva. Cierre: coordenadas/tipos/estados exactos; fórmula y resultado separados; todos los canales incluidos o pendientes explícitos. El caso `EmptyCell` ya está reproducido como H03; los demás son pruebas futuras.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://learn.microsoft.com/en-us/office/open-xml/spreadsheet/structure-of-a-spreadsheetml-document",
+        "https://learn.microsoft.com/en-us/office/open-xml/spreadsheet/working-with-formulas"
+      ]
+    },
+    {
+      "id": "FMT05",
+      "family": "PowerPoint PPTX",
+      "extensions_are_hints": [
+        "pptx"
+      ],
+      "status_in_current_application": "native_partial",
+      "anatomy_and_constraints_markdown": "**Fabricación.** Escena por diapositiva, formas/grupos y relaciones con layout, master y tema; notas, diagramas, gráficos y medios pueden ocupar partes separadas. [PresentationML](https://learn.microsoft.com/en-us/office/open-xml/presentation/structure-of-a-presentationml-document).\n\n**Ruta.** Semántica de objetos y conectores + render; conservar posiciones, jerarquía, notas, diapositivas ocultas y medios. Orden XML no es lectura certificada. Imagen estática no cubre animación/audio/video; inventariar esos canales sin declararlos interpretados.\n\n**Caso testigo.** Nota exclusiva, texto de master, grupo rotado, SmartArt, gráfico y flecha NO/SÍ. Cierre: notas asociadas, recursos inventariados y relaciones con dirección/etiqueta comprobadas o pendientes. Dos cajas legibles con un conector no equivalen a un flujo extraído: el fallo de detección visual actual está reproducido en H02.",
+      "proposed_route": "Semántica de objetos y conectores + render; conservar posiciones, jerarquía, notas, diapositivas ocultas y medios. Orden XML no es lectura certificada. Imagen estática no cubre animación/audio/video; inventariar esos canales sin declararlos interpretados.",
+      "proposed_fixture_and_exit_test": "Nota exclusiva, texto de master, grupo rotado, SmartArt, gráfico y flecha NO/SÍ. Cierre: notas asociadas, recursos inventariados y relaciones con dirección/etiqueta comprobadas o pendientes. Dos cajas legibles con un conector no equivalen a un flujo extraído: el fallo de detección visual actual está reproducido en H02.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://learn.microsoft.com/en-us/office/open-xml/presentation/structure-of-a-presentationml-document"
+      ]
+    },
+    {
+      "id": "FMT06",
+      "family": "Visio VSDX",
+      "extensions_are_hints": [
+        "vsdx"
+      ],
+      "status_in_current_application": "native_partial",
+      "anatomy_and_constraints_markdown": "**Fabricación.** OPC con vocabulario propio: páginas, masters, formas, ShapeSheet, geometría y propiedades. [Formato VSDX](https://learn.microsoft.com/en-us/office/client-developer/visio/introduction-to-the-visio-file-formatvsdx). `Connect` identifica extremos con `FromSheet`/`ToSheet` y referencias de celda/parte; el sentido semántico del flujo requiere interpretación adicional. [Conexiones](https://learn.microsoft.com/en-us/office/client-developer/visio/connect-element-connects_type-complextypevisio-xml).\n\n**Ruta.** Resolver XML/masters/estilos → grafo de nodos/conexiones y propiedades → render de referencia. Conservar forma sin texto, capas, fondos y grupos. Una flecha o etiqueta ausente puede cambiar todo el procedimiento.\n\n**Caso testigo.** Master reutilizado, grupo anidado, capa oculta, Shape Data, dos conectores y forma sin texto. Cierre: IDs/extremos correctos, propiedades recuperadas, dirección del flujo cotejada y componentes no resueltos señalados.",
+      "proposed_route": "Resolver XML/masters/estilos → grafo de nodos/conexiones y propiedades → render de referencia. Conservar forma sin texto, capas, fondos y grupos. Una flecha o etiqueta ausente puede cambiar todo el procedimiento.",
+      "proposed_fixture_and_exit_test": "Master reutilizado, grupo anidado, capa oculta, Shape Data, dos conectores y forma sin texto. Cierre: IDs/extremos correctos, propiedades recuperadas, dirección del flujo cotejada y componentes no resueltos señalados.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://learn.microsoft.com/en-us/office/client-developer/visio/connect-element-connects_type-complextypevisio-xml",
+        "https://learn.microsoft.com/en-us/office/client-developer/visio/introduction-to-the-visio-file-formatvsdx"
+      ]
+    },
+    {
+      "id": "FMT07",
+      "family": "CAD: DWG y DXF",
+      "extensions_are_hints": [
+        "dwg",
+        "dxf"
+      ],
+      "status_in_current_application": "native_partial",
+      "anatomy_and_constraints_markdown": "**Fabricación.** DXF almacena entidades/propiedades mediante códigos; bloques, inserciones y referencias externas se relacionan. DWG requiere lector/conversor compatible con su versión. Una definición de bloque puede contener inserciones de otros bloques. [Autodesk: bloques y xrefs](https://help.autodesk.com/cloudhelp/2023/ENU/AutoCAD-DXF/files/GUID-9DDFC343-6C87-4AF8-B3B9-77E0AB5A3031.htm).\n\n**Ruta.** Parser CAD → entidades, atributos, capas, bloques, layouts, referencias y unidades → aplicar transformaciones → render para cotejo. El contexto y las escalas de inserción determinan las unidades, que no se deducen de cómo se ve el número. La documentación de ezdxf advierte que parte de su interpretación de unidades procede de experimentos de compatibilidad: debe probarse contra el CAD de referencia. [Unidades ezdxf](https://ezdxf.readthedocs.io/en/stable/concepts/units.html).\n\n**Caso testigo.** Bloque rotado y escalado, arco, spline, layout y xref ausente. Cierre: texto/atributos y transformaciones correctos; unidad y tolerancia explícitas; xref faltante visible; entidades no soportadas contabilizadas. Longitud aproximada o deducida de imagen no se publica como metrado certificado. Preservar el DWG original y el DXF derivado con trazabilidad.",
+      "proposed_route": "Parser CAD → entidades, atributos, capas, bloques, layouts, referencias y unidades → aplicar transformaciones → render para cotejo. El contexto y las escalas de inserción determinan las unidades, que no se deducen de cómo se ve el número. La documentación de ezdxf advierte que parte de su interpretación de unidades procede de experimentos de compatibilidad: debe probarse contra el CAD de referencia. [Unidades ezdxf](https://ezdxf.readthedocs.io/en/stable/concepts/units.html).",
+      "proposed_fixture_and_exit_test": "Bloque rotado y escalado, arco, spline, layout y xref ausente. Cierre: texto/atributos y transformaciones correctos; unidad y tolerancia explícitas; xref faltante visible; entidades no soportadas contabilizadas. Longitud aproximada o deducida de imagen no se publica como metrado certificado. Preservar el DWG original y el DXF derivado con trazabilidad.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://ezdxf.readthedocs.io/en/stable/concepts/units.html",
+        "https://help.autodesk.com/cloudhelp/2023/ENU/AutoCAD-DXF/files/GUID-9DDFC343-6C87-4AF8-B3B9-77E0AB5A3031.htm"
+      ]
+    },
+    {
+      "id": "FMT08",
+      "family": "EPUB",
+      "extensions_are_hints": [
+        "epub"
+      ],
+      "status_in_current_application": "zip_detected_no_epub_route",
+      "anatomy_and_constraints_markdown": "**Fabricación.** Contenedor ZIP documental: `mimetype`, `META-INF/container.xml`, paquete, manifiesto y `spine`; XHTML/SVG, estilos, imágenes y navegación. La lista de recursos no define su orden de lectura. [EPUB 3.3](https://www.w3.org/TR/epub-33/).\n\n**Ruta.** Detectar EPUB dentro del ZIP → resolver paquete y spine → extraer capítulos, notas, enlaces, figuras, metadatos y matemática → render selectivo si el layout es fijo. Recursos externos se inventarían sin descargarlos por defecto; contenido cifrado se declara pendiente, sin intentar eludir protección.\n\n**Caso testigo.** Capítulos cuyos nombres alfabéticos contradicen el spine, notas con enlace de retorno e imagen. Cierre: secuencia correcta, enlaces resolubles y activos presentes; conservar identificadores de capítulo/fragmento. No inventar números de página para un libro refluible.",
+      "proposed_route": "Detectar EPUB dentro del ZIP → resolver paquete y spine → extraer capítulos, notas, enlaces, figuras, metadatos y matemática → render selectivo si el layout es fijo. Recursos externos se inventarían sin descargarlos por defecto; contenido cifrado se declara pendiente, sin intentar eludir protección.",
+      "proposed_fixture_and_exit_test": "Capítulos cuyos nombres alfabéticos contradicen el spine, notas con enlace de retorno e imagen. Cierre: secuencia correcta, enlaces resolubles y activos presentes; conservar identificadores de capítulo/fragmento. No inventar números de página para un libro refluible.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://www.w3.org/TR/epub-33/"
+      ]
+    },
+    {
+      "id": "FMT09",
+      "family": "HTML y HTM",
+      "extensions_are_hints": [
+        "html",
+        "htm"
+      ],
+      "status_in_current_application": "html_pending_htm_may_be_raw_text",
+      "anatomy_and_constraints_markdown": "**Fabricación.** Bytes/codificación → tokens → árbol DOM; scripts pueden modificar el documento y los estilos cambian su apariencia. [Algoritmo HTML](https://html.spec.whatwg.org/multipage/parsing.html).\n\n**Ruta.** Parser HTML real, selección explícita del alcance, estructura/tables/enlaces/alt text y recursos locales. Separar árbol almacenado de una página generada por scripts. Render aislado opcional con política de red; no ejecutar automáticamente scripts de archivos importados.\n\n**Caso testigo.** HTML con entidades, tabla con spans, imagen relativa y contenido que solo aparece mediante JavaScript. Cierre: información almacenada fiel, scripts inactivos, recursos ausentes visibles; declarar que contenido dinámico no fue ejecutado. Renombrar `.html` a `.htm` no debe cambiarlo a texto bruto.",
+      "proposed_route": "Parser HTML real, selección explícita del alcance, estructura/tables/enlaces/alt text y recursos locales. Separar árbol almacenado de una página generada por scripts. Render aislado opcional con política de red; no ejecutar automáticamente scripts de archivos importados.",
+      "proposed_fixture_and_exit_test": "HTML con entidades, tabla con spans, imagen relativa y contenido que solo aparece mediante JavaScript. Cierre: información almacenada fiel, scripts inactivos, recursos ausentes visibles; declarar que contenido dinámico no fue ejecutado. Renombrar `.html` a `.htm` no debe cambiarlo a texto bruto.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://html.spec.whatwg.org/multipage/parsing.html"
+      ]
+    },
+    {
+      "id": "FMT10",
+      "family": "TXT y Markdown",
+      "extensions_are_hints": [
+        "txt",
+        "md",
+        "markdown"
+      ],
+      "status_in_current_application": "utf8_text_route_no_external_assets",
+      "anatomy_and_constraints_markdown": "**Fabricación.** Bytes y codificación en TXT; Markdown agrega una gramática y dialectos, con bloques de código, referencias y posible HTML incrustado. [CommonMark](https://spec.commonmark.org/0.31.2/).\n\n**Ruta.** Preservar original/codificación, indicar fallos de decodificación y construir árbol cuando sea MD. Distinguir encabezado real de `#` dentro de código. Sanitizar la vista HTML y mantener una política explícita para enlaces/recursos externos.\n\n**Caso testigo.** UTF-8/UTF-16, acentos, bloque de código con encabezados falsos y enlace relativo. Cierre: ningún carácter sustituido sin aviso; texto y código íntegros; enlace local resuelto o pendiente, sin descarga silenciosa.",
+      "proposed_route": "Preservar original/codificación, indicar fallos de decodificación y construir árbol cuando sea MD. Distinguir encabezado real de `#` dentro de código. Sanitizar la vista HTML y mantener una política explícita para enlaces/recursos externos.",
+      "proposed_fixture_and_exit_test": "UTF-8/UTF-16, acentos, bloque de código con encabezados falsos y enlace relativo. Cierre: ningún carácter sustituido sin aviso; texto y código íntegros; enlace local resuelto o pendiente, sin descarga silenciosa.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://spec.commonmark.org/0.31.2/"
+      ]
+    },
+    {
+      "id": "FMT11",
+      "family": "CSV",
+      "extensions_are_hints": [
+        "csv"
+      ],
+      "status_in_current_application": "detected_without_specialized_route",
+      "anatomy_and_constraints_markdown": "**Fabricación.** Registros y campos con delimitadores/comillas; un campo puede contener saltos de línea. RFC 4180 describe una variante, no todas las exportaciones regionales. [RFC 4180](https://www.rfc-editor.org/info/rfc4180/).\n\n**Ruta.** Parser de dialecto/codificación con opción de confirmación cuando hay ambigüedad. Conservar el texto de cada campo; no convertir automáticamente `0012` en `12`, ni `1,25` en dos números. La detección de cabecera es heurística. [Python CSV](https://docs.python.org/3.13/library/csv.html).\n\n**Caso testigo.** Coma/punto y coma, comillas escapadas, campos multilínea, códigos con cero inicial y fecha ambigua. Cierre: dimensiones/campos exactos y decisiones de tipo explícitas. Una exportación destinada a hojas de cálculo debe impedir que datos se ejecuten como fórmulas, manteniendo el valor original aparte.",
+      "proposed_route": "Parser de dialecto/codificación con opción de confirmación cuando hay ambigüedad. Conservar el texto de cada campo; no convertir automáticamente `0012` en `12`, ni `1,25` en dos números. La detección de cabecera es heurística. [Python CSV](https://docs.python.org/3.13/library/csv.html).",
+      "proposed_fixture_and_exit_test": "Coma/punto y coma, comillas escapadas, campos multilínea, códigos con cero inicial y fecha ambigua. Cierre: dimensiones/campos exactos y decisiones de tipo explícitas. Una exportación destinada a hojas de cálculo debe impedir que datos se ejecuten como fórmulas, manteniendo el valor original aparte.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://docs.python.org/3.13/library/csv.html",
+        "https://www.rfc-editor.org/info/rfc4180/"
+      ]
+    },
+    {
+      "id": "FMT12",
+      "family": "JSON",
+      "extensions_are_hints": [
+        "json"
+      ],
+      "status_in_current_application": "detected_without_specialized_route",
+      "anatomy_and_constraints_markdown": "**Fabricación.** Objetos, arrays y valores; nombres repetidos generan comportamientos inconsistentes entre lectores y los números pueden exceder la precisión de ciertos runtimes. [RFC 8259](https://www.rfc-editor.org/info/rfc8259/).\n\n**Ruta.** Parser estricto con límites de tamaño/profundidad; detectar duplicados y conservar números sin pérdida. JSON importado es dato del usuario, no configuración ejecutable ni respuesta de IA confiable. Mantener su estructura y localizadores; generar MD solo como vista.\n\n**Caso testigo.** Clave duplicada, entero de más de 53 bits, array heterogéneo, `null` y cadena vacía. Cierre: no se pierde precisión ni se confunden null/vacío/ausente; duplicados rechazados o representados con advertencia y original íntegro.",
+      "proposed_route": "Parser estricto con límites de tamaño/profundidad; detectar duplicados y conservar números sin pérdida. JSON importado es dato del usuario, no configuración ejecutable ni respuesta de IA confiable. Mantener su estructura y localizadores; generar MD solo como vista.",
+      "proposed_fixture_and_exit_test": "Clave duplicada, entero de más de 53 bits, array heterogéneo, `null` y cadena vacía. Cierre: no se pierde precisión ni se confunden null/vacío/ausente; duplicados rechazados o representados con advertencia y original íntegro.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://www.rfc-editor.org/info/rfc8259/"
+      ]
+    },
+    {
+      "id": "FMT13",
+      "family": "XML genérico",
+      "extensions_are_hints": [
+        "xml"
+      ],
+      "status_in_current_application": "detected_without_specialized_route",
+      "anatomy_and_constraints_markdown": "**Fabricación.** Elementos, atributos, namespaces, texto mixto y entidades; el namespace y vocabulario definen el dominio, no el sufijo `.xml`. [XML, W3C](https://www.w3.org/TR/xml/).\n\n**Ruta.** Parser seguro sin resolver entidades externas; preservar namespaces, atributos, orden y texto mixto. Detectar vocabulario conocido —por ejemplo Excel XML— antes de la ruta genérica. No aplanar todos los XML como párrafos.\n\n**Caso testigo.** Dos namespaces con nombres locales iguales, texto mezclado con etiquetas y referencia externa. Cierre: identidades/orden preservados; referencia externa no leída; no se pierden atributos que contienen datos.",
+      "proposed_route": "Parser seguro sin resolver entidades externas; preservar namespaces, atributos, orden y texto mixto. Detectar vocabulario conocido —por ejemplo Excel XML— antes de la ruta genérica. No aplanar todos los XML como párrafos.",
+      "proposed_fixture_and_exit_test": "Dos namespaces con nombres locales iguales, texto mezclado con etiquetas y referencia externa. Cierre: identidades/orden preservados; referencia externa no leída; no se pierden atributos que contienen datos.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://www.w3.org/TR/xml/"
+      ]
+    },
+    {
+      "id": "FMT14",
+      "family": "Office binario heredado: DOC, XLS y PPT",
+      "extensions_are_hints": [
+        "doc",
+        "xls",
+        "ppt"
+      ],
+      "status_in_current_application": "ole_detected_conversion_pending",
+      "anatomy_and_constraints_markdown": "**Fabricación.** OLE/CFB con streams específicos; no son OOXML descomprimibles. DOC reconstruye texto a través de sus estructuras; XLS usa registros binarios; PPT resuelve registros/objetos vigentes. Buscar cadenas sueltas puede mezclar contenido residual. [CFB](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cfb/53989ce4-7b05-4f8d-829b-d08d6148375b), [DOC](https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-doc/01d5d8c4-cf9c-4ef9-80fd-439e763cfe01), [XLS](https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xls/b0bd153a-9fad-456e-ac69-af652e6ef021), [PPT](https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/1fc22d56-28f9-4818-bd45-67c2bf721ccf).\n\n**Ruta.** Parser específico o conversión controlada de una copia mediante aplicación compatible, manteniendo originales, versiones, avisos y hashes de derivados. No asumir que pasar a OOXML o PDF es neutro. LibreOffice documenta diferencias de importación/exportación en revisiones, objetos, tablas, masters y multimedia. [Limitaciones](https://help.libreoffice.org/latest/en-US/text/shared/guide/ms_import_export_limitations.html).\n\n**Caso testigo.** DOC con revisiones/campos, XLS con fórmulas/hoja oculta y PPT con notas/objeto incrustado. Cierre: marcadores y canales comparados antes/después; macros, objetos y vínculos permanecen inactivos; cualquier pérdida queda visible. OLE detectado no identifica de forma suficiente todos los subtipos ni un paquete cifrado.",
+      "proposed_route": "Parser específico o conversión controlada de una copia mediante aplicación compatible, manteniendo originales, versiones, avisos y hashes de derivados. No asumir que pasar a OOXML o PDF es neutro. LibreOffice documenta diferencias de importación/exportación en revisiones, objetos, tablas, masters y multimedia. [Limitaciones](https://help.libreoffice.org/latest/en-US/text/shared/guide/ms_import_export_limitations.html).",
+      "proposed_fixture_and_exit_test": "DOC con revisiones/campos, XLS con fórmulas/hoja oculta y PPT con notas/objeto incrustado. Cierre: marcadores y canales comparados antes/después; macros, objetos y vínculos permanecen inactivos; cualquier pérdida queda visible. OLE detectado no identifica de forma suficiente todos los subtipos ni un paquete cifrado.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://help.libreoffice.org/latest/en-US/text/shared/guide/ms_import_export_limitations.html",
+        "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-doc/01d5d8c4-cf9c-4ef9-80fd-439e763cfe01",
+        "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/1fc22d56-28f9-4818-bd45-67c2bf721ccf",
+        "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xls/b0bd153a-9fad-456e-ac69-af652e6ef021",
+        "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cfb/53989ce4-7b05-4f8d-829b-d08d6148375b"
+      ]
+    },
+    {
+      "id": "FMT15",
+      "family": "RTF",
+      "extensions_are_hints": [
+        "rtf"
+      ],
+      "status_in_current_application": "may_be_accepted_as_raw_text_no_rtf_parser",
+      "anatomy_and_constraints_markdown": "**Fabricación.** Gramática de grupos, palabras de control y destinos, con Unicode, páginas de códigos y objetos. Borrar comandos con regex no constituye un parser fiable. [Especificación Microsoft RTF 1.9.1](https://officeprotocoldoc.z19.web.core.windows.net/files/Archive_References/%5BMSFT-RTF%5D.pdf).\n\n**Ruta.** Parser con pila de estados, destinos y escapes → estructura/contenido → render Word/Writer si hace falta. No confundir datos ASCII con texto ya extraído.\n\n**Caso testigo.** Unicode con fallback, carácter escapado, destino ignorable, tabla, campo y objeto. Cierre: fallback no duplicado, estructura correcta y objetos inventariados sin activarlos. El texto de control `\\\\rtf` no debe publicarse como extracción legible terminada.",
+      "proposed_route": "Parser con pila de estados, destinos y escapes → estructura/contenido → render Word/Writer si hace falta. No confundir datos ASCII con texto ya extraído.",
+      "proposed_fixture_and_exit_test": "Unicode con fallback, carácter escapado, destino ignorable, tabla, campo y objeto. Cierre: fallback no duplicado, estructura correcta y objetos inventariados sin activarlos. El texto de control `\\\\rtf` no debe publicarse como extracción legible terminada.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://officeprotocoldoc.z19.web.core.windows.net/files/Archive_References/%5BMSFT-RTF%5D.pdf"
+      ]
+    },
+    {
+      "id": "FMT16",
+      "family": "Excel XML 2003",
+      "extensions_are_hints": [
+        "xml",
+        "xls"
+      ],
+      "status_in_current_application": "no_specific_route",
+      "anatomy_and_constraints_markdown": "**Fabricación.** XML con vocabulario de hoja de cálculo; distinto de XLS binario y XLSX ZIP. Resolver elementos por URI de namespace y nombre local, sin exigir un prefijo concreto. [Namespaces W3C](https://www.w3.org/TR/REC-xml-names/).\n\n**Ruta.** Adaptador XML específico; interpretar posiciones, tipos, estilos y fórmulas según su esquema. **Pendiente de investigación técnica adicional:** la referencia histórica completa del esquema no se recuperó en esta sesión; validar detalles de índices y fórmulas antes de implementarlos. Cambiar el sufijo a `.xlsx` no convierte el contenido.\n\n**Caso testigo propuesto.** Varias hojas, posiciones discontinuas, fusiones y fórmulas R1C1, comparadas con Excel. Cierre: posiciones/expresiones/valores exactos. Microsoft documenta que guardar como XML 2003 pierde gráficos, objetos, VBA y otras capacidades; no usarlo como puente de conservación integral. [Pérdidas documentadas](https://support.microsoft.com/en-us/excel/what-s-lost-when-i-save-my-workbook-as-an-xml-spreadsheet-2003-file).",
+      "proposed_route": "Adaptador XML específico; interpretar posiciones, tipos, estilos y fórmulas según su esquema. **Pendiente de investigación técnica adicional:** la referencia histórica completa del esquema no se recuperó en esta sesión; validar detalles de índices y fórmulas antes de implementarlos. Cambiar el sufijo a `.xlsx` no convierte el contenido.",
+      "proposed_fixture_and_exit_test": "Varias hojas, posiciones discontinuas, fusiones y fórmulas R1C1, comparadas con Excel. Cierre: posiciones/expresiones/valores exactos. Microsoft documenta que guardar como XML 2003 pierde gráficos, objetos, VBA y otras capacidades; no usarlo como puente de conservación integral. [Pérdidas documentadas](https://support.microsoft.com/en-us/excel/what-s-lost-when-i-save-my-workbook-as-an-xml-spreadsheet-2003-file).",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://support.microsoft.com/en-us/excel/what-s-lost-when-i-save-my-workbook-as-an-xml-spreadsheet-2003-file",
+        "https://www.w3.org/TR/REC-xml-names/"
+      ]
+    },
+    {
+      "id": "FMT17",
+      "family": "OpenDocument: ODT, ODS, ODP y ODG",
+      "extensions_are_hints": [
+        "odt",
+        "ods",
+        "odp",
+        "odg"
+      ],
+      "status_in_current_application": "additional_proposed_family_not_integrated",
+      "anatomy_and_constraints_markdown": "**Fabricación.** El paquete habitual reúne contenido, estilos, metadatos, configuración y manifiesto. Detectar versión y variante; leer solo `content.xml` es insuficiente. [LibreOffice: estructura/versiones](https://help.libreoffice.org/latest/en-US/text/shared/00/00000021.html), [esquema ODF 1.4](https://docs.oasis-open.org/office/OpenDocument/os/part3-schema/OpenDocument-v1.4-os-part3-schema.pdf).\n\n**Ruta.** Parser ODF por familia y render validado. Preservar fórmulas/valores, notas, cambios, masters, grupos y conectores. Expandir filas/celdas repetidas con límites controlados; una celda cubierta por fusión no equivale a una celda con valor independiente.\n\n**Caso testigo.** ODT con notas/cambios, ODS con repetición/fusión/fórmula, ODP con notas/master y ODG con grupo/conector. Cierre: estructura lógica y referencias correctas, sin expansión descontrolada ni pérdida silenciosa. Familia adicional propuesta, no soportada por el programa solo por figurar en este atlas.",
+      "proposed_route": "Parser ODF por familia y render validado. Preservar fórmulas/valores, notas, cambios, masters, grupos y conectores. Expandir filas/celdas repetidas con límites controlados; una celda cubierta por fusión no equivale a una celda con valor independiente.",
+      "proposed_fixture_and_exit_test": "ODT con notas/cambios, ODS con repetición/fusión/fórmula, ODP con notas/master y ODG con grupo/conector. Cierre: estructura lógica y referencias correctas, sin expansión descontrolada ni pérdida silenciosa. Familia adicional propuesta, no soportada por el programa solo por figurar en este atlas.",
+      "fixture_executed_in_this_study": false,
+      "sources": [
+        "https://docs.oasis-open.org/office/OpenDocument/os/part3-schema/OpenDocument-v1.4-os-part3-schema.pdf",
+        "https://help.libreoffice.org/latest/en-US/text/shared/00/00000021.html"
+      ]
+    },
+    {
+      "id": "FMT18",
+      "family": "ZIP, RAR, 7z, GZ y componentes internos",
+      "extensions_are_hints": [
+        "zip",
+        "rar",
+        "7z",
+        "gz"
+      ],
+      "status_in_current_application": "container_detection_not_document_conversion",
+      "anatomy_and_constraints_markdown": "Un contenedor puede ser un documento estructurado, como DOCX/EPUB, o un archivo de varios documentos. **Reconocer ZIP no es motivo suficiente para excluirlo.** Inspeccionar de forma limitada sus entradas/firmas antes de decidir. RAR/7z/GZ genéricos quedan fuera del primer adaptador documental; una futura importación de archivos comprimidos necesita su política propia.\n\nLos `.rels`, XML y medios internos de Office se leen como piezas del documento; no se procesan por separado como documentos independientes. Controles propuestos: rutas fuera del destino, expansión excesiva, archivos anidados, symlinks y entradas duplicadas. Cierre: contenedor documental legítimo llega a su parser; paquete peligroso o desconocido queda rechazado/pendiente con causa, sin escribir fuera del destino.",
+      "proposed_route": null,
+      "proposed_fixture_and_exit_test": null,
+      "fixture_executed_in_this_study": false,
+      "sources": []
+    }
+  ],
+  "reproductions_observed": [
+    {
+      "gap": "H01",
+      "structural_ok": true,
+      "render_error": "KeyError: 'title'",
+      "scope": "internal contract, not every public entrypoint"
+    },
+    {
+      "gap": "H02",
+      "count_visual": 1,
+      "slides_flagged": [],
+      "markdown": "## Diapositiva 1\nInicio\nAprobado\n",
+      "scope": "two text boxes and one connector, memory only"
+    },
+    {
+      "gap": "H03",
+      "error": "AttributeError: 'EmptyCell' object has no attribute 'column'",
+      "scope": "small workbook in memory; branch forced by mocked 31 MB file size, not a large-file benchmark"
+    }
+  ],
+  "pilot_proposal": {
+    "real_documents": 24,
+    "construction_documents": 12,
+    "books_articles": 12,
+    "max_selected_units": 96,
+    "synthetic_fixtures": "additional risk-based cases by family",
+    "all_atlas_families_certified_by_this_pilot": false,
+    "executed": false
+  },
+  "limitations": [
+    "No new engine install or model download",
+    "No paid API calls or user corpus run",
+    "Existing suite not rerun; 135 passed is historical as of 2026-09-15",
+    "Three reproduced issues are not fixed",
+    "No commercial or security certification",
+    "Excel XML 2003 detailed historical schema reference remains to verify",
+    "UI is an interactive concept using examples, not an implemented product"
+  ],
+  "source_snapshot_at_report_assembly": [
+    {
+      "path": "conversion/documents.py",
+      "sha256": "b0ea759763cc84aea6b7dc37a85350a4b83d813843e5165bfc9ed3a03a613e4a"
+    },
+    {
+      "path": "conversion/native.py",
+      "sha256": "f422f4fee1efa4bf6bedfef5fae445f04580d19f47710a804807b05ec00a42cc"
+    },
+    {
+      "path": "conversion/pipeline.py",
+      "sha256": "e8158d8e38467bb5cec2ccbddf6aef6e0a57034a89cf6fb5497eaa1cb5b8d77a"
+    },
+    {
+      "path": "conversion/workflow.py",
+      "sha256": "9f30ea57b61a1bc62f3802229ce25a4ec5ff84bcc160f7c93200a4eccabbd42c"
+    },
+    {
+      "path": "conversion/batches.py",
+      "sha256": "25af9965831b9936f5563474849778358ee9218766687ad8f4e562d586f0da37"
+    },
+    {
+      "path": "conversion/diagnostics.py",
+      "sha256": "ab2aa6da4abac316811f62790cb83be82f5b8ac8d8e1e1b7010d43402a564ce5"
+    },
+    {
+      "path": "conversion/providers.py",
+      "sha256": "15610f73e7895d70edf1f63173acc4b9d2abf6f4ded1343c65683c00a040d842"
+    },
+    {
+      "path": "conversion/excel_structure.py",
+      "sha256": "13cdb92cc4975de08cf075fac30086eb23dc318c8e417f9d1d0929c4100c2255"
+    }
+  ],
+  "sources": [
+    "https://ai.google.dev/gemini-api/docs/rate-limits",
+    "https://api-docs.deepseek.com/guides/vision/",
+    "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html",
+    "https://developers.openai.com/api/docs/guides/images-vision",
+    "https://developers.openai.com/api/docs/guides/structured-outputs",
+    "https://docling-project.github.io/docling/concepts/confidence_scores/",
+    "https://docling-project.github.io/docling/concepts/docling_document/",
+    "https://docling-project.github.io/docling/getting_started/installation/",
+    "https://docling-project.github.io/docling/reference/document_converter/",
+    "https://docling-project.github.io/docling/usage/advanced_options/",
+    "https://docling-project.github.io/docling/usage/supported_formats/",
+    "https://docs.oasis-open.org/office/OpenDocument/os/part3-schema/OpenDocument-v1.4-os-part3-schema.pdf",
+    "https://docs.python.org/3.13/library/concurrent.futures.html",
+    "https://docs.python.org/3.13/library/csv.html",
+    "https://ecma-international.org/publications-and-standards/standards/ecma-376/",
+    "https://ezdxf.readthedocs.io/en/stable/concepts/units.html",
+    "https://github.com/Netflix/Hystrix",
+    "https://github.com/Netflix/Hystrix/wiki/How-it-Works",
+    "https://github.com/allenai/olmocr/blob/main/olmocr/bench/README.md",
+    "https://github.com/datalab-to/marker",
+    "https://github.com/datalab-to/marker/blob/master/MODEL_LICENSE",
+    "https://github.com/datalab-to/marker/blob/master/marker/output.py",
+    "https://github.com/datalab-to/marker/blob/master/marker/renderers/json.py",
+    "https://github.com/datalab-to/marker/blob/master/pyproject.toml",
+    "https://github.com/datalab-to/marker/blob/v1.10.2/LICENSE",
+    "https://github.com/datalab-to/marker/blob/v1.10.2/MODEL_LICENSE",
+    "https://github.com/datalab-to/marker/releases/tag/v2.0.0",
+    "https://github.com/datalab-to/surya",
+    "https://github.com/datalab-to/surya/blob/master/surya/settings.py",
+    "https://github.com/docling-project/docling",
+    "https://github.com/docling-project/docling/releases/tag/v2.129.0",
+    "https://github.com/microsoft/markitdown",
+    "https://github.com/microsoft/markitdown/releases/tag/v0.1.7",
+    "https://github.com/opendatalab/MinerU#telemetry",
+    "https://github.com/opendatalab/MinerU/blob/master/LICENSE.md",
+    "https://github.com/opendatalab/MinerU/blob/master/pyproject.toml",
+    "https://github.com/opendatalab/MinerU/releases",
+    "https://github.com/opendatalab/OmniDocBench",
+    "https://help.autodesk.com/cloudhelp/2023/ENU/AutoCAD-DXF/files/GUID-9DDFC343-6C87-4AF8-B3B9-77E0AB5A3031.htm",
+    "https://help.autodesk.com/cloudhelp/2025/ENU/AutoCAD-WhatsNew/files/GUID-3EB7B2CB-C04B-4F24-AE5E-0EC8CDA37728.htm",
+    "https://help.autodesk.com/cloudhelp/2026/ENU/AutoCAD-Customization/files/GUID-BC76355D-682B-46ED-B9B7-66C95EEF2BD0.htm",
+    "https://help.libreoffice.org/latest/en-US/text/shared/00/00000021.html",
+    "https://help.libreoffice.org/latest/en-US/text/shared/guide/ms_import_export_limitations.html",
+    "https://html.spec.whatwg.org/multipage/parsing.html",
+    "https://huggingface.co/opendatalab/MinerU-4_models_onnx",
+    "https://huggingface.co/opendatalab/MinerU2.5-Pro-2604-1.2B",
+    "https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.fieldcode",
+    "https://learn.microsoft.com/en-us/dotnet/api/system.io.packaging.encryptedpackageenvelope.isencryptedpackageenvelope",
+    "https://learn.microsoft.com/en-us/office/client-developer/visio/connect-element-connects_type-complextypevisio-xml",
+    "https://learn.microsoft.com/en-us/office/client-developer/visio/introduction-to-the-visio-file-formatvsdx",
+    "https://learn.microsoft.com/en-us/office/open-xml/presentation/structure-of-a-presentationml-document",
+    "https://learn.microsoft.com/en-us/office/open-xml/spreadsheet/structure-of-a-spreadsheetml-document",
+    "https://learn.microsoft.com/en-us/office/open-xml/spreadsheet/working-with-formulas",
+    "https://learn.microsoft.com/en-us/office/open-xml/word/how-to-accept-all-revisions-in-a-word-processing-document",
+    "https://learn.microsoft.com/en-us/office/open-xml/word/structure-of-a-wordprocessingml-document",
+    "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-doc/01d5d8c4-cf9c-4ef9-80fd-439e763cfe01",
+    "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-ppt/1fc22d56-28f9-4818-bd45-67c2bf721ccf",
+    "https://learn.microsoft.com/en-us/openspecs/office_file_formats/ms-xls/b0bd153a-9fad-456e-ac69-af652e6ef021",
+    "https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-cfb/53989ce4-7b05-4f8d-829b-d08d6148375b",
+    "https://learn.microsoft.com/en-us/windows/apps/design/basics/navigation-basics",
+    "https://learn.microsoft.com/en-us/windows/apps/develop/accessibility",
+    "https://learn.microsoft.com/en-us/windows/apps/develop/ui/controls/infobar",
+    "https://learn.microsoft.com/en-us/windows/apps/develop/ui/controls/progress-controls",
+    "https://learn.microsoft.com/en-us/windows/msix/app-installer/update-settings",
+    "https://learn.microsoft.com/en-us/windows/msix/package/sign-msix-package-guide",
+    "https://learn.microsoft.com/en-us/windows/win32/api/dpapi/nf-dpapi-cryptprotectdata",
+    "https://libtiff.gitlab.io/libtiff/multi_page.html",
+    "https://libtiff.gitlab.io/libtiff/specification/bigtiff.html",
+    "https://mozilla.github.io/pdf.js/getting_started/",
+    "https://netflix.github.io/atlas-docs/overview/",
+    "https://officeprotocoldoc.z19.web.core.windows.net/files/Archive_References/%5BMSFT-RTF%5D.pdf",
+    "https://opendatalab.github.io/MinerU/reference/changelog/",
+    "https://opendatalab.github.io/MinerU/reference/migration_4/",
+    "https://opendatalab.github.io/MinerU/reference/output_files/",
+    "https://opendatalab.github.io/MinerU/usage/model_source/",
+    "https://opendatalab.github.io/MinerU/usage/sdk_api/",
+    "https://opendatalab.github.io/MinerU/usage/tiers/",
+    "https://opensource.adobe.com/dc-acrobat-sdk-docs/acrobatsdk/apireference/PD_Layer/PDPage.html",
+    "https://pdf-issues.pdfa.org/32000-2-2020/clause07.html",
+    "https://pdf-issues.pdfa.org/32000-2-2020/clause09.html",
+    "https://pdfa.org/download-area/publications/BPG-Math-in-PDF.pdf",
+    "https://pdfa.org/the-smallest-possible-valid-pdf/",
+    "https://pdfa.org/wp-content/uploads/2023/07/Tagged-PDF-Best-Practice-Guide.pdf",
+    "https://platform.claude.com/docs/en/api/overview",
+    "https://pymupdf.readthedocs.io/en/latest/faq/index.html",
+    "https://raw.githubusercontent.com/docling-project/docling/v2.129.0/docling/backend/msexcel_backend.py",
+    "https://raw.githubusercontent.com/docling-project/docling/v2.129.0/docling/backend/mspowerpoint_backend.py",
+    "https://raw.githubusercontent.com/docling-project/docling/v2.129.0/pyproject.toml",
+    "https://raw.githubusercontent.com/microsoft/markitdown/v0.1.7/packages/markitdown/src/markitdown/_base_converter.py",
+    "https://raw.githubusercontent.com/microsoft/markitdown/v0.1.7/packages/markitdown/src/markitdown/converters/_pptx_converter.py",
+    "https://raw.githubusercontent.com/microsoft/markitdown/v0.1.7/packages/markitdown/src/markitdown/converters/_transcribe_audio.py",
+    "https://raw.githubusercontent.com/microsoft/markitdown/v0.1.7/packages/markitdown/src/markitdown/converters/_xlsx_converter.py",
+    "https://spec.commonmark.org/0.31.2/",
+    "https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan",
+    "https://support.microsoft.com/en-us/excel/what-s-lost-when-i-save-my-workbook-as-an-xml-spreadsheet-2003-file",
+    "https://tesseract-ocr.github.io/tessdoc/Command-Line-Usage.html",
+    "https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html",
+    "https://tika.apache.org/docs/4.0.x/formats.html",
+    "https://www.alibabacloud.com/help/en/model-studio/compatibility-of-openai-with-dashscope",
+    "https://www.autodesk.com/support/account/admin/licensing-faq/authorization",
+    "https://www.autodesk.com/support/download-install/admins/account-deploy/deploy-from-autodesk-account",
+    "https://www.itu.int/itudoc/itu-t/com16/tiff-fx/docs/tiff6.pdf",
+    "https://www.opendesign.com/faq/question/what-are-oda-viewer-and-oda-file-converter",
+    "https://www.opendesign.com/pricing",
+    "https://www.rfc-editor.org/info/rfc4180/",
+    "https://www.rfc-editor.org/info/rfc8259/",
+    "https://www.typescriptlang.org/docs/handbook/intro",
+    "https://www.w3.org/TR/2025/REC-png-3-20250624/",
+    "https://www.w3.org/TR/REC-xml-names/",
+    "https://www.w3.org/TR/epub-33/",
+    "https://www.w3.org/TR/xml/"
+  ],
+  "companion_documents": [
+    {
+      "name": "INVESTIGACION_MOTORES_LOCAL_API.md",
+      "sha256": "031999fda68adc3cad4db3022abf5eeaa9ce22a96312c9ac25f22be5bed1d783"
+    },
+    {
+      "name": "ADN_FORMATOS_EXTRACCION.md",
+      "sha256": "72d6463f8553d65bbcd5accd5b83f542047880e593f981d3617a9ade54f93be3"
+    }
+  ]
+}

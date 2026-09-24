@@ -1,0 +1,11 @@
+{
+  "tests": 401,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "seconds": 104.906,
+  "successful": true,
+  "network_guard": "socket.create_connection blocked in parent process",
+  "scope": "Equipo de origen; no es validación de una segunda PC.",
+  "date": "2026-09-21"
+}
