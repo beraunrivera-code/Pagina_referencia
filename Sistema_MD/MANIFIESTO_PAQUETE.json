@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "Sistema MD · prueba técnica en otra PC",
-  "created_utc": "2026-09-24T21:55:50.013458+00:00",
+  "created_utc": "2026-09-24T22:03:49.931005+00:00",
   "files": {
     ".dockerignore": "d2f03a93a7d5405f893e8e8442e94430fa7dd74eafd1dea84cfd69980840e1ee",
     ".gitignore": "6ab95e86bdfb74448d504f7b8152ab3ce6112888e269d9cc25a80d8c7c635911",
@@ -88,7 +88,7 @@
     "app/tests/test_portable_probe.py": "13f996957c70445a88a0aefbb11c5566f6ac7570817cb6b800d544815e599969",
     "app/tests/test_providers.py": "c807297e230378cccd99b3ac97a339dda24640ccfc86ae96e212a91e96e2258d",
     "app/tests/test_publish_promotion.py": "574cb1352daaf554d1fcaadc6f4ec3f85c8e9f3cae431263aff4a3fa95de7c1a",
-    "app/tests/test_robustez_formatos.py": "76347ad9b0ce7fc5a3148f92049e43082a516e376de9a9295410357f750aac39",
+    "app/tests/test_robustez_formatos.py": "3e8854158c2ae0e175eec96922f20f82c4af22e2e8ea3f2a88a0e8250745681a",
     "app/tests/test_runtime_paths.py": "17b958084d7e691b1d625be20e8d97d26aff77f928c6d73dbd84d0d4813bf920",
     "app/tests/test_selector.py": "5ed3dff8fe6737d2806e409507b439621d7bebac3c05068f2531af8271a4ebdc",
     "app/tests/test_semantic_interface.py": "650fcc3c7e77042e25f272854a0a2b11f9b7a58ba37cdaa57e3cc6b12ba289da",
@@ -117,7 +117,7 @@
     "tortura/conversion_stress.antes.log": "314e40c4efb618f53d3bc5b9817d2f98eb37b6d8faaf6ac9f2b5d339ea3a4c87",
     "tortura/conversion_stress.despues.log": "51e6e4d247fc7059c944432f3bf4abccff5cf7253326f6b4d9a21c713dc5edc3",
     "tortura/ejecutar_tortura.py": "ea5cb4c358d9ba1b5dca319dfa00a5c22ac61d1d7973edb7f755830d95f139dc",
-    "tortura/generar_tortura_multiformato.py": "914c383b774432d68a8e323576bc2df3e3dcd5a48c55b207e86e8dfe9a03f92d",
+    "tortura/generar_tortura_multiformato.py": "88054e38058e3dad2de2bad8fed51742daadc841c6ed0a62d82bb429076d7373",
     "tortura/validacion_antes.json": "d0437121c0bac7ead933123d530601098e803a27b2efba2da15a097da61f660d",
     "tortura/validacion_despues.json": "7ed02249661f15541004d1bcb3c755013373026e08011ea6bda6c52a9b0c9918",
     "tortura/validar_salidas_md.py": "094cbec5623b17c8952156f758047e7a6d1c2947a18799ea3b80ccafc1e63c6f",

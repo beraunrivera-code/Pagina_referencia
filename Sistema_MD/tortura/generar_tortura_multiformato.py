@@ -600,7 +600,10 @@ def cad(destino: Path) -> Path:
     modelo.add_lwpolyline([(0, 40, 0, 0, 0.5), (10, 40, 0, 0, -1.0), (20, 45, 0, 0, 0.0), (20, 55, 0, 0, 0.414)],
                           format="xyseb", close=True)
     modelo.add_polyline3d([(0, 60, 0), (5, 62, 3), (10, 60, 6), (15, 65, -2)])
-    modelo.add_polyline2d([(30, 40), (35, 45), (40, 40)], format="xy").close(True)
+    # POLYLINE 2D (entidad clásica, no LW) con arcos por vértice y cerrada. En DXF la 3D no
+    # admite bulge: sus tramos son siempre rectos.
+    modelo.add_polyline2d([(30, 40, 0, 0, 0.6), (35, 45, 0, 0, -0.4), (40, 40, 0, 0, 1.0)],
+                          format="xyseb").close(True)
     presentacion = dibujo.layouts.new("Lámina A1 | revisión")
     presentacion.add_text("Rótulo en paper space", dxfattribs={"height": 2}).set_placement((10, 10))
     ruta = destino / "stress_cad.dxf"

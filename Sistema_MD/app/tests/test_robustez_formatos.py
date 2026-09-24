@@ -155,6 +155,7 @@ class CanalesTests(TestCase):
         space.add_lwpolyline([(0, 0), (1, 0), (1, 1), (0, 1)], close=True, dxfattribs={"layer": "CUADRADO"})
         space.add_arc((0, 0), 1, 350, 10, dxfattribs={"layer": "ARCO"})
         space.add_polyline3d([(0, 0, 0), (0, 0, 5)], dxfattribs={"layer": "VERTICAL"})
+        space.add_polyline2d([(0, 0, 0, 0, -1.0), (4, 0, 0, 0, 0)], format="xyseb", dxfattribs={"layer": "P2D"})
         source = self.base / "medidas.dxf"
         drawing.saveas(source)
         measured = native.dwg_medir(str(source), str(self.base / "cad"))["largo_capa"]
@@ -162,6 +163,7 @@ class CanalesTests(TestCase):
         self.assertAlmostEqual(measured["CUADRADO"], 4.0, places=6)
         self.assertAlmostEqual(measured["ARCO"], math.radians(20), places=6)
         self.assertAlmostEqual(measured["VERTICAL"], 5.0, places=6)
+        self.assertAlmostEqual(measured["P2D"], 2 * math.pi, places=6)    # semicírculo de radio 2
 
     def test_image_without_ocr_is_published_with_explicit_pending(self):
         ocr.engine.cache_clear()
