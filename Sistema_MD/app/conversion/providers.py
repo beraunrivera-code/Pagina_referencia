@@ -67,7 +67,8 @@ def cli_binary(provider):
         name = "codex" if provider == "codex-cli" else "claude"
         executable = shutil.which(name)
         if not executable and name == "claude":
-            candidate = Path(os.environ.get("USERPROFILE", "")) / ".local/bin/claude.exe"
+            candidate = (Path(os.environ.get("USERPROFILE", "")) / ".local/bin/claude.exe" if os.name == "nt"
+                         else Path.home() / ".local/bin/claude")
             if candidate.is_file():
                 executable = str(candidate)
         if executable and Path(executable).suffix.lower() not in {".bat", ".cmd", ".ps1"}:
@@ -79,6 +80,9 @@ def cli_profile_dir(provider, profile):
     if provider not in {"gemini-cli", "codex-cli", "claude-cli"} or profile not in profiles_for(provider):
         raise ValueError("Perfil CLI inválido")
     base = os.environ.get("LOCALAPPDATA")
+    if not base and os.name != "nt":
+        # Equivalente XDG de %LOCALAPPDATA%: datos por usuario, fuera del proyecto.
+        base = os.environ.get("XDG_DATA_HOME") or str(Path.home() / ".local" / "share")
     if not base:
         raise ValueError("Windows no informó LOCALAPPDATA para aislar el perfil CLI")
     return Path(base).resolve() / "SistemaMD" / "perfiles_cli" / provider / profile

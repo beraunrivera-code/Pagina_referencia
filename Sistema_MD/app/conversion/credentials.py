@@ -1,4 +1,8 @@
-"""Claves por usuario en Windows Credential Manager; nunca en archivos del proyecto."""
+"""Claves por usuario en Windows Credential Manager; nunca en archivos del proyecto.
+
+Fuera de Windows (Linux/contenedor) la única fuente es la variable de entorno indicada:
+el almacén nativo no existe y no se sustituye por un archivo en disco.
+"""
 import ctypes
 from ctypes import wintypes
 import os
@@ -21,6 +25,11 @@ class Credential(ctypes.Structure):
                 ("Persist", wintypes.DWORD), ("AttributeCount", wintypes.DWORD),
                 ("Attributes", ctypes.c_void_p), ("TargetAlias", wintypes.LPWSTR),
                 ("UserName", wintypes.LPWSTR)]
+
+
+def _last_error():
+    """``ctypes.get_last_error`` solo existe en Windows; aislado para poder simularlo."""
+    return ctypes.get_last_error()
 
 
 def _library():
@@ -56,7 +65,7 @@ def get_key(provider: str, slot: int = 1) -> str | None:
     lib = _library()
     pointer = ctypes.POINTER(Credential)()
     if not lib.CredReadW(target, 1, 0, ctypes.byref(pointer)):
-        if ctypes.get_last_error() == 1168:
+        if _last_error() == 1168:
             return None
         raise OSError("Windows no permite leer la credencial de SistemaMD")
     try:
@@ -107,6 +116,6 @@ def delete_key(provider: str, slot: int = 1) -> bool:
         raise OSError("Fuera de Windows gestiona la variable de entorno indicada")
     if _library().CredDeleteW(target, 1, 0):
         return True
-    if ctypes.get_last_error() == 1168:
+    if _last_error() == 1168:
         return False
     raise OSError("Windows no pudo borrar la credencial seleccionada de SistemaMD")

@@ -4,6 +4,11 @@ No crea usuarios, guarda contraseñas, extrae OAuth ni reutiliza scripts de Clau
 El llamador debe registrar intención y obtener consentimiento ANTES de invocarlo.
 La ACL protege el paquete; NO convierte al usuario fab ni al CLI en un sandbox.
 Un resultado incierto se conserva y nunca se reenvía automáticamente.
+
+Plataforma: Authenticode, ACL NTFS, runas y el worker PowerShell son garantías de Windows.
+En Linux/contenedor NO se omiten ni se simulan: todas las llamadas nativas pasan por
+``_require_windows``/``_windows_tool`` y fallan cerradas con ``fab_windows`` antes de
+tocar documentos, en lugar de un FileNotFoundError por powershell.exe o runas.exe.
 """
 from contextlib import ExitStack, contextmanager
 import ctypes
@@ -57,6 +62,26 @@ def _fault(code, message):
     raise FabBridgeFault(code, message)
 
 
+def _require_windows():
+    """Única puerta de plataforma del puente; se evalúa antes de cualquier E/S."""
+    if os.name != "nt":
+        _fault("fab_windows", "El puente fab requiere Windows (runas, Authenticode y ACL NTFS). "
+                              "En Linux usa una conexión API o un CLI de sesión propio.")
+
+
+def _windows_tool(command, *, what):
+    """Ejecuta powershell.exe/runas.exe sin shell; fuera de Windows falla cerrado sin lanzar."""
+    _require_windows()
+    try:
+        return subprocess.run(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              timeout=30, shell=False, env=_environment(),
+                              creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    except (OSError, subprocess.TimeoutExpired):
+        if what == "acl":
+            _fault("fab_acl", "No se pudo comprobar la ACL. No se copiaron documentos ni se inició IA.")
+        _fault("fab_dispatch_unknown", "Despacho fab incierto. Conservado el intento; no repetir ni borrar trabajos en vuelo.")
+
+
 def _environment():
     return {key: value for key, value in os.environ.items() if key.upper() in _SAFE_ENV}
 
@@ -90,8 +115,7 @@ def _json_file(path, value):
 @contextmanager
 def _locked_path(path, *, directory=True):
     """Impide cambiar/borrar los directorios y el ejecutable mientras se despacha."""
-    if os.name != "nt":
-        _fault("fab_windows", "El puente fab requiere Windows y ACL nativas verificables.")
+    _require_windows()
     info = path.lstat()
     if getattr(info, "st_file_attributes", 0) & 0x400 or directory != stat.S_ISDIR(info.st_mode):
         _fault("fab_path", "Ruta insegura: enlace/reparse point o tipo incorrecto.")
@@ -123,13 +147,7 @@ def _powershell(script):
     # No contiene documentos, secretos ni valores remotos.
     import base64
     encoded = base64.b64encode(script.encode("utf-16le")).decode("ascii")
-    try:
-        result = subprocess.run([POWERSHELL, "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded],
-                                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                timeout=30, shell=False, env=_environment(),
-                                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-    except (OSError, subprocess.TimeoutExpired):
-        _fault("fab_acl", "No se pudo comprobar la ACL. No se copiaron documentos ni se inició IA.")
+    result = _windows_tool([POWERSHELL, "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded], what="acl")
     if result.returncode or len(result.stdout) > MAX_RECEIPT:
         _fault("fab_acl", "Windows rechazó la preparación segura; envío bloqueado.")
     try:
@@ -220,13 +238,7 @@ def _launch(stage, profile):
     # Quoting Windows de argumentos; nunca shell ni interpolación de documentos.
     command = subprocess.list2cmdline([POWERSHELL, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
                                      "-WindowStyle", "Hidden", "-File", str(helper), "-Folder", str(stage)])
-    try:
-        result = subprocess.run([RUNAS, "/profile", "/savecred", f"/user:.\\{profile}", command],
-                                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                timeout=30, shell=False, env=_environment(),
-                                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-    except (OSError, subprocess.TimeoutExpired):
-        _fault("fab_dispatch_unknown", "Despacho fab incierto. Conservado el intento; no repetir ni borrar trabajos en vuelo.")
+    result = _windows_tool([RUNAS, "/profile", "/savecred", f"/user:.\\{profile}", command], what="dispatch")
     if result.returncode:
         _fault("fab_dispatch_unknown", "runas no confirmó el despacho. Revisa la conexión fab; no se reintenta automáticamente.")
 
@@ -265,8 +277,7 @@ def run_fab(profile, model, folder, timeout, *, executable=None, expected_hash=N
         _fault("fab_selection", "Elige un perfil fab1–fab5 y un identificador de modelo explícito válido.")
     if type(timeout) is not int or not 5 <= timeout <= 1200:
         _fault("fab_timeout", "El tiempo del puente debe ser un entero entre 5 y 1200 segundos.")
-    if os.name != "nt":
-        _fault("fab_windows", "El puente fab requiere Windows.")
+    _require_windows()
     binary_path = Path(executable) if executable is not None else AGY_BINARY
     base = Path(shared_base) if shared_base is not None else FAB_BASE
     if (not base.is_absolute() or not binary_path.is_absolute() or str(base).startswith("\\\\")

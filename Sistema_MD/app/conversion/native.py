@@ -33,14 +33,89 @@ from __future__ import annotations
 
 import io
 import os
-from .local_io import md_cell
+from .local_io import clean_control, decode_ooxml_escapes, md_cell, md_text
 
 from .runtime_paths import find_oda
 ODA_EXE = find_oda()
 
-# Formatos que `pipeline.detect()` devuelve y que estos motores cubren. "office-legacy" (xls/doc/ppt
-# en contenedor OLE) NO está: el origen tampoco tenía ficha para ellos y no se inventa una.
-KINDS = frozenset({"docx", "xlsx", "pptx", "vsdx", "dwg", "dxf"})
+
+def _oda_command(argumentos, exe=None):
+    """Orden y entorno para ODA. En Linux sin $DISPLAY el Qt de ODA aborta con el plugin
+    «xcb»: se envuelve en ``xvfb-run -a`` (pantalla virtual). Sin xvfb-run se intenta el
+    plugin ``offscreen`` de Qt, que no todas las versiones de ODA incluyen."""
+    exe = exe or ODA_EXE
+    orden = [exe, *argumentos]
+    entorno = None
+    if os.name != "nt" and not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")):
+        import shutil
+        xvfb = shutil.which("xvfb-run")
+        if xvfb:
+            orden = [xvfb, "-a", *orden]
+        else:
+            entorno = {**os.environ, "QT_QPA_PLATFORM": "offscreen"}
+    return orden, entorno
+
+# Medios embebidos que se conservan como imágenes del paquete (capa 3 del ADN de Excel y
+# anexos de Word). Formatos vectoriales y de mapa de bits habituales en ``xl/media/``.
+IMAGE_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff",
+                              ".emf", ".wmf", ".svg", ".webp"})
+
+# Formatos que `pipeline.detect()` devuelve y que estos motores cubren. XLS/DOC/PPT (OLE) y XLSB
+# pasan por una copia OOXML hecha con LibreOffice (``office_legacy``); las imágenes, por OCR local.
+# Un OLE no identificado ("office-legacy": msg, vsd…) sigue sin ficha y no se inventa una.
+IMAGE_KINDS = frozenset({"png", "jpg", "tif", "gif", "webp"})
+LEGACY_KINDS = frozenset({"xls", "xlsb", "doc", "ppt"})
+KINDS = frozenset({"docx", "xlsx", "pptx", "vsdx", "dwg", "dxf"}) | IMAGE_KINDS | LEGACY_KINDS
+IMAGE_MAX_PIXELS = 60_000_000         # por página: una "bomba" de descompresión no llega a memoria
+IMAGE_MAX_PAGES = 200
+
+
+def imagen_ocr(ruta, dest):
+    """Imagen (también TIFF multipágina) a paquete: cada página en PNG + texto OCR candidato.
+
+    Devuelve (markdown, páginas, páginas_sin_texto). Una imagen dañada o truncada se rechaza
+    con ConversionError: nunca se publica una página parcialmente decodificada.
+    """
+    from PIL import Image, ImageSequence, UnidentifiedImageError
+    from . import ocr
+    from .local_io import ConversionError
+    os.makedirs(dest, exist_ok=True)
+    try:
+        with Image.open(ruta) as imagen:
+            imagen.verify()                      # CRC/estructura, sin decodificar píxeles
+    except (UnidentifiedImageError, OSError, SyntaxError, ValueError, Image.DecompressionBombError) as error:
+        raise ConversionError(f"Imagen dañada o ilegible: {error}") from None
+    md, sin_texto, paginas = [], [], 0
+    motor = ocr.describe()
+    try:
+        with Image.open(ruta) as imagen:
+            for numero, cuadro in enumerate(ImageSequence.Iterator(imagen), 1):
+                if numero > IMAGE_MAX_PAGES:
+                    raise ConversionError(f"Más de {IMAGE_MAX_PAGES} páginas en una imagen: requiere un alcance explícito")
+                ancho, alto = cuadro.size
+                if ancho * alto > IMAGE_MAX_PIXELS:
+                    raise ConversionError(f"Página {numero}: {ancho}×{alto} px supera {IMAGE_MAX_PIXELS // 1_000_000} MP")
+                cuadro.load()                    # aquí aflora "image file is truncated"
+                rgb = cuadro.convert("RGB")      # CMYK, paleta, 16 bits, transparencia
+                salida = io.BytesIO()
+                rgb.save(salida, format="PNG")
+                nombre = "pagina_%03d.png" % numero
+                with io.open(os.path.join(dest, nombre), "wb") as archivo:
+                    archivo.write(salida.getvalue())
+                paginas = numero
+                texto = ocr.ocr_png(salida.getvalue())
+                md += ["## Página %d" % numero, "", "![Imagen original, página %d](imagenes/%s)" % (numero, nombre), ""]
+                if texto:
+                    md += ["*Texto OCR candidato (%s) — sin verificar contra la imagen:*" % motor, "", md_text(texto), ""]
+                else:
+                    sin_texto.append(numero)
+                    motivo = "sin texto reconocible" if ocr.engine() else "Tesseract no está instalado"
+                    md += ["[PENDIENTE: OCR de la página %d — %s; revisar la imagen.]" % (numero, motivo), ""]
+    except ConversionError:
+        raise
+    except (OSError, SyntaxError, ValueError, Image.DecompressionBombError) as error:
+        raise ConversionError(f"Imagen dañada o truncada: {error}") from None
+    return "\n".join(md), paginas, sin_texto
 
 # ------------------------------------------------------------------ MECÁNICO (0 tokens)
 _TEMPORALES = []
@@ -68,7 +143,7 @@ def limpiar_temporales():
     _TEMPORALES.clear()
 
 
-def excel_tres_capas(ruta, dest):
+def excel_tres_capas(ruta, dest, titulo=None):
     """Lectura estructurada + rejilla íntegra + fórmulas/imágenes; sin IA.
 
     La versión anterior juntaba todas las zonas de una hoja en una sola tabla.
@@ -82,9 +157,10 @@ def excel_tres_capas(ruta, dest):
     import zipfile
     from contextlib import ExitStack, closing
     from openpyxl.utils.cell import range_boundaries
-    from .excel_structure import build_workbook
+    from .excel_structure import build_workbook, hidden_mark
     os.makedirs(dest, exist_ok=True)
-    raw_md = ["# %s" % os.path.basename(ruta), ""]
+    titulo = titulo or os.path.basename(ruta)     # copia convertida: se muestra el nombre real
+    raw_md = ["# %s" % titulo, ""]
     sheet_records = []
     count = 0
     visited = 0
@@ -109,7 +185,7 @@ def excel_tres_capas(ruta, dest):
             if hasattr(hf, "reset_dimensions"):
                 hf.reset_dimensions()
             hv.reset_dimensions()
-            raw_md.extend(["## Hoja: %s%s" % (hf.title, "  *(oculta)*" if hf.sheet_state != "visible" else ""), ""])
+            raw_md.extend(["## Hoja: %s%s" % (hf.title, hidden_mark(hf.sheet_state)), ""])
             filas_hoja = {}                      # fila -> {indice_de_columna: texto}
             usadas = set()
             ancho_hoja = 0
@@ -135,12 +211,19 @@ def excel_tres_capas(ruta, dest):
                     cached = cached_by_column.get(indice)
                     cached_value = cached.value if cached is not None else None
                     value = c.value
+                    if c.data_type != "f":
+                        # openpyxl deja «_x000D_» literal; Excel lo escribe así para «\r».
+                        value = decode_ooxml_escapes(value)
+                    cached_value = decode_ooxml_escapes(cached_value)
                     if value is not None:
-                        raw.writerow([hf.title, c.coordinate, c.data_type, value, cached_value])
+                        raw.writerow([hf.title, c.coordinate, c.data_type,
+                                      clean_control(value) if isinstance(value, str) else value,
+                                      clean_control(cached_value) if isinstance(cached_value, str) else cached_value])
                     if c.data_type == "f":
                         count += 1
                         formula = value if isinstance(value, str) else getattr(value, "text", str(value))
-                        formulas.writerow([hf.title, c.coordinate, formula, cached_value])
+                        formulas.writerow([hf.title, c.coordinate, formula,
+                                           clean_control(cached_value) if isinstance(cached_value, str) else cached_value])
                         value = cached_value if cached_value is not None else f"[SIN CACHÉ] {formula}"
                     if value is None:
                         continue
@@ -180,7 +263,7 @@ def excel_tres_capas(ruta, dest):
                                   "used_columns": sorted(usadas), "tables": tables,
                                   "merges": merges, "rich_metadata": rich})
             if not filas_hoja:
-                raw_md.append("")
+                raw_md.extend(["*(hoja sin celdas con datos)*", ""])
                 continue
             cols = sorted(usadas)
             raw_md.extend([
@@ -190,8 +273,7 @@ def excel_tres_capas(ruta, dest):
             for row in sorted(filas_hoja):
                 raw_md.append("| " + " | ".join(filas_hoja[row].get(c, "") for c in cols) + " |")
             raw_md.append("")
-    title = os.path.basename(ruta)
-    md, structure = build_workbook(title, sheet_records)
+    md, structure = build_workbook(titulo, sheet_records)
     with io.open(os.path.join(dest, "estructura.json"), "w", encoding="utf-8") as stream:
         json.dump(structure, stream, ensure_ascii=False, sort_keys=True, indent=2)
         stream.write("\n")
@@ -200,129 +282,198 @@ def excel_tres_capas(ruta, dest):
     # 🖼️ CANAL QUE FALTABA: un Excel puede llevar el diagrama como IMAGEN dentro de una hoja
     # (medido el 13-sep: «PROCEDIMIENTO FLUJO LAP» tiene una hoja «Flujograma» que openpyxl
     # devolvia VACIA — el flujograma era una imagen). Viven en xl/media/ dentro del zip.
+    # Capa 3: cada medio se aísla; el empaquetado lo ubica en imagenes/ por su extensión.
     imgs = []
     with zipfile.ZipFile(ruta) as z:
         for n in z.namelist():
-            if n.startswith("xl/media/") and n.split(".")[-1].lower() in ("png", "jpg", "jpeg", "gif", "emf"):
-                f = os.path.join(dest, os.path.basename(n))
+            base = os.path.basename(n)
+            if n.startswith("xl/media/") and base and os.path.splitext(base)[1].lower() in IMAGE_EXTENSIONS:
+                f = os.path.join(dest, base)
+                if os.path.exists(f):                  # subcarpetas de media con el mismo nombre
+                    f = os.path.join(dest, "media%02d_%s" % (len(imgs) + 1, base))
                 with io.open(f, "wb") as salida: salida.write(z.read(n))
                 imgs.append(f)
     return md, count, imgs, structure
 
 
 def docx_texto(ruta, dest):
-    import docx
-    os.makedirs(dest, exist_ok=True)
-    from docx.text.paragraph import Paragraph
-    with open(ruta, "rb") as stream:
-        d = docx.Document(stream)
-    md = []
-    tables = 0
-    for element in d.iter_inner_content():
-        if isinstance(element, Paragraph):
-            t = element.text.strip()
-            if not t: continue
-            est = (element.style.name or "").lower()
-            if "heading 1" in est or "título 1" in est: md.append("## " + t)
-            elif "heading 2" in est or "título 2" in est: md.append("### " + t)
-            elif "heading" in est or "título" in est: md.append("#### " + t)
-            else: md.append(t)
-        else:
-            tables += 1
-            md.append("\n**Tabla %d**\n" % tables)
-            width = len(element.columns)
-            md.append("| " + " | ".join(f"Columna {n+1}" for n in range(width)) + " |")
-            md.append("| " + " | ".join("---" for _ in range(width)) + " |")
-            for fila in element.rows:
-                md.append("| " + " | ".join(md_cell(c.text) for c in fila.cells) + " |")
-    n = 0
-    for rel in d.part.rels.values():                       # imágenes embebidas
-        if "image" in rel.reltype and not rel.is_external:
-            n += 1
-            with io.open(os.path.join(dest, "img%02d.%s" % (n, rel.target_ref.split(".")[-1])), "wb") as salida:
-                salida.write(rel.target_part.blob)
-    return "\n\n".join(md), n
+    """Párrafos, listas, tablas (también anidadas), notas, fórmulas OMML e imágenes.
+
+    El recorrido vive en ``word_docx`` porque python-docx omite canales enteros
+    (tablas dentro de celdas, notas al pie, OMML); ver ese módulo.
+    """
+    from .word_docx import docx_markdown
+    return docx_markdown(ruta, dest)
 
 
 def _texto_cad(s):
     """Limpia los códigos de formato de AutoCAD de un texto: `\\fRomanD|b1|…;\\W.8;1` -> `1`,
-    `%%C` -> `Ø`, `%%D` -> `°`, `\\P` -> salto. Sin esto el MD sale lleno de ruido ilegible."""
+    `%%C` -> `Ø`, `%%D` -> `°`, `\\P` -> salto. Sin esto el MD sale lleno de ruido ilegible.
+    No recorta: una nota de especificaciones larga es dato, no ruido."""
     import re as _re
     s = str(s or "")
     s = s.replace("%%C", "Ø").replace("%%c", "Ø").replace("%%D", "°").replace("%%d", "°")
     s = s.replace("%%P", "±").replace("%%p", "±").replace("%%%", "%")
     s = _re.sub(r"\\[fF][^;]*;", "", s)          # fuente
-    s = _re.sub(r"\\[A-Za-z][^\\;]*;", "", s)    # ancho, altura, color, seguimiento…
+    s = _re.sub(r"\\[A-Za-z][^\;]*;", "", s)    # ancho, altura, color, seguimiento…
     s = s.replace("\\P", " ").replace("\\~", " ")
     s = _re.sub(r"[{}]", "", s)
-    return _re.sub(r"\s+", " ", s).strip()[:300]
+    return _re.sub(r"\s+", " ", clean_control(s)).strip()
+
+
+CAD_MAX_ENTIDADES = 500_000      # tras expandir bloques: un MINSERT/recursión no agota memoria
+CAD_MAX_PROFUNDIDAD = 16
+
+
+def _largo_polilinea(puntos, bulges, cerrada):
+    """Longitud con arcos: un bulge b sobre una cuerda c da un arco de ángulo 4·atan|b|."""
+    import math
+    total = 0.0
+    tramos = len(puntos) if cerrada and len(puntos) > 2 else len(puntos) - 1
+    for i in range(max(0, tramos)):
+        p, q = puntos[i], puntos[(i + 1) % len(puntos)]
+        cuerda = math.dist(p, q)
+        b = bulges[i] if bulges and i < len(bulges) else 0.0
+        if b:
+            theta = 4 * math.atan(abs(b))
+            total += cuerda * theta / (2 * math.sin(theta / 2)) if math.sin(theta / 2) else cuerda
+        else:
+            total += cuerda
+    return total
+
+
+def _texto_cota(e):
+    """Texto visible de una DIMENSION: «<>» es la medida real; vacío = solo la medida."""
+    bruto = str(e.dxf.get("text", "") or "")
+    if bruto.strip() == ".":                   # texto suprimido por el dibujante
+        return ""
+    try:
+        medida = e.get_measurement()
+        medida = float(medida if isinstance(medida, (int, float)) else abs(medida))
+        valor = ("%.4f" % medida).rstrip("0").rstrip(".")
+    except Exception:
+        valor = "?"
+    texto = bruto.replace("<>", valor) if "<>" in bruto else (bruto or valor)
+    return _texto_cad(texto)
+
+
+def _leer_cad(ruta):
+    import ezdxf
+    from .local_io import ConversionError
+    if ruta.lower().endswith(".dxf"):
+        # Desviación única respecto al original: un DXF ya es lo que ODA produce; se lee directo.
+        try:
+            return ezdxf.readfile(ruta)
+        except ezdxf.DXFStructureError as error:
+            raise ConversionError(f"DXF dañado o truncado: {error}. No se publica una medición parcial.") from None
+    import subprocess, tempfile, shutil
+    if not os.path.isfile(ODA_EXE):
+        raise ConversionError("Falta ODA File Converter. Instálalo por su vía oficial o indica su ejecutable con SISTEMA_MD_ODA.")
+    # ODA convierte por CARPETA, no por archivo
+    ent = tempfile.mkdtemp(prefix="dwg_in_"); sal = tempfile.mkdtemp(prefix="dwg_out_")
+    try:
+        shutil.copy2(ruta, os.path.join(ent, os.path.basename(ruta)))
+        orden, entorno = _oda_command([ent, sal, "ACAD2018", "DXF", "0", "1"])
+        subprocess.run(orden, capture_output=True, timeout=900, env=entorno)
+        dxfs = [f for f in os.listdir(sal) if f.lower().endswith(".dxf")]
+        if not dxfs:
+            raise ConversionError("ODA no produjo DXF (¿archivo dañado o versión no soportada?)")
+        try:
+            return ezdxf.readfile(os.path.join(sal, dxfs[0]))
+        except ezdxf.DXFStructureError as error:
+            raise ConversionError(f"ODA produjo un DXF ilegible: {error}") from None
+    finally:
+        # ezdxf ya cargó el DXF en memoria: los dos temporales se borran aquí, pase lo que pase
+        shutil.rmtree(ent, ignore_errors=True)
+        shutil.rmtree(sal, ignore_errors=True)
 
 
 def dwg_medir(ruta, dest):
     """Un DWG no se convierte a prosa: se MIDE. Textos, bloques, capas y **la GEOMETRÍA** (el canal
     que un extractor de solo textos descarta: ahí vive el metrado lineal). Se leen el model space
     y los layouts: 6 planos daban CERO porque sus ~3.740 entidades vivían en el paper space.
+    Los bloques se expanden (también anidados) con su transformación: el texto y la geometría
+    de un INSERT dentro de otro INSERT existen en el plano aunque no estén en el model space.
     """
-    import ezdxf, subprocess, tempfile, shutil, math, collections
+    import math, collections
     os.makedirs(dest, exist_ok=True)
-    if ruta.lower().endswith(".dxf"):
-        # Desviación única respecto al original: un DXF ya es lo que ODA produce; se lee directo.
-        d = ezdxf.readfile(ruta)
-    else:
-        if not os.path.isfile(ODA_EXE):
-            raise RuntimeError("Falta ODA File Converter. Instálalo por su vía oficial o indica su ejecutable con SISTEMA_MD_ODA.")
-        # ODA convierte por CARPETA, no por archivo
-        ent = tempfile.mkdtemp(prefix="dwg_in_"); sal = tempfile.mkdtemp(prefix="dwg_out_")
-        try:
-            shutil.copy2(ruta, os.path.join(ent, os.path.basename(ruta)))
-            subprocess.run([ODA_EXE, ent, sal, "ACAD2018", "DXF", "0", "1"], capture_output=True, timeout=900)
-            dxfs = [f for f in os.listdir(sal) if f.lower().endswith(".dxf")]
-            if not dxfs: raise RuntimeError("ODA no produjo DXF (¿archivo dañado o versión no soportada?)")
-            d = ezdxf.readfile(os.path.join(sal, dxfs[0]))
-        finally:
-            # ezdxf ya cargó el DXF en memoria: los dos temporales se borran aquí, pase lo que pase
-            shutil.rmtree(ent, ignore_errors=True)
-            shutil.rmtree(sal, ignore_errors=True)
+    d = _leer_cad(ruta)
     espacios = [d.modelspace()]
     for lay in d.layouts:
         try:
             if lay.name.lower() != "model": espacios.append(lay)
         except Exception: pass
     textos, bloques, largo_capa, tipos = [], collections.Counter(), collections.Counter(), collections.Counter()
-    n_ent = 0
-    for esp in espacios:
-        for e in esp:
-            n_ent += 1
+    estado = {"entidades": 0, "truncado": False, "sin_expandir": 0, "ilegibles": collections.Counter()}
+
+    def recorrer(entidades, profundidad, origen, capa_padre):
+        for e in entidades:
+            if estado["entidades"] >= CAD_MAX_ENTIDADES:
+                estado["truncado"] = True
+                return
+            estado["entidades"] += 1
             t = e.dxftype(); tipos[t] += 1
-            capa = getattr(e.dxf, "layer", "")
+            capa = getattr(e.dxf, "layer", "") or ""
+            if capa == "0" and capa_padre:          # capa 0 dentro de un bloque hereda la del INSERT
+                capa = capa_padre
             try:
-                if t == "TEXT": textos.append((capa, _texto_cad(e.dxf.text)))
+                if t in ("TEXT", "ATTRIB"): textos.append((capa, origen, _texto_cad(e.dxf.text)))
                 elif t == "MTEXT":
                     # 🔴 `e.text` devuelve el MTEXT con los códigos de formato de AutoCAD dentro:
                     # `\fRomanD|b1|i0|c0|p2|;\W.8;1` cuando el texto real es «1». `plain_text()`
                     # los quita; si la versión de ezdxf no lo trae, se limpia a mano.
                     try: bruto = e.plain_text()
                     except Exception: bruto = str(e.text)
-                    textos.append((capa, _texto_cad(bruto)))
+                    textos.append((capa, origen, _texto_cad(bruto)))
+                elif t == "DIMENSION":
+                    # Texto de la cota (con su medida real); su bloque gráfico no es geometría del plano.
+                    texto = _texto_cota(e)
+                    if texto: textos.append((capa, origen, "cota: " + texto))
                 elif t == "INSERT":
-                    bloques[str(e.dxf.name)] += 1
+                    nombre = str(e.dxf.name)
+                    bloques[nombre] += 1
                     for a in getattr(e, "attribs", []):
-                        textos.append((capa, "%s = %s" % (a.dxf.tag, _texto_cad(a.dxf.text))))
+                        textos.append((capa, origen, "%s = %s" % (a.dxf.tag, _texto_cad(a.dxf.text))))
+                    if profundidad >= CAD_MAX_PROFUNDIDAD:
+                        estado["sin_expandir"] += 1
+                        continue
+                    try:
+                        virtuales = list(e.virtual_entities())
+                    except Exception:
+                        estado["sin_expandir"] += 1      # bloque sin definición / transformación no uniforme
+                        continue
+                    recorrer(virtuales, profundidad + 1, origen + " › " + nombre, capa)
                 # 🔑 GEOMETRÍA: lo que el extractor viejo tiraba
                 elif t == "LINE":
                     p, q = e.dxf.start, e.dxf.end
                     largo_capa[capa] += math.dist((p[0], p[1], p[2]), (q[0], q[1], q[2]))
-                elif t in ("LWPOLYLINE", "POLYLINE"):
-                    pts = [tuple(x[:2]) for x in e.get_points()] if t == "LWPOLYLINE" else \
-                          [tuple(v.dxf.location[:2]) for v in e.vertices]
-                    largo_capa[capa] += sum(math.dist(pts[i], pts[i+1]) for i in range(len(pts)-1))
+                elif t == "LWPOLYLINE":
+                    puntos = [tuple(x[:2]) for x in e.get_points("xyb")]
+                    bulges = [x[2] for x in e.get_points("xyb")]
+                    largo_capa[capa] += _largo_polilinea(puntos, bulges, e.closed)
+                elif t == "POLYLINE":
+                    tres_d = e.is_3d_polyline
+                    # Vec3 acelerado de ezdxf no admite rebanadas: `location[:2]` lanzaba TypeError y
+                    # el `except` de abajo dejaba toda POLYLINE en longitud 0 sin aviso.
+                    puntos = [tuple(v.dxf.location)[:3 if tres_d else 2] for v in e.vertices]
+                    bulges = [] if tres_d else [v.dxf.get("bulge", 0.0) for v in e.vertices]
+                    largo_capa[capa] += _largo_polilinea(puntos, bulges, e.is_closed)
                 elif t == "ARC":
-                    largo_capa[capa] += abs(e.dxf.end_angle - e.dxf.start_angle) * math.pi / 180 * e.dxf.radius
+                    barrido = (e.dxf.end_angle - e.dxf.start_angle) % 360 or 360
+                    largo_capa[capa] += barrido * math.pi / 180 * e.dxf.radius
                 elif t == "CIRCLE":
                     largo_capa[capa] += 2 * math.pi * e.dxf.radius
             except Exception:
-                continue
+                # Una entidad ilegible no detiene la medición, pero se declara: el silencio
+                # escondió durante meses que toda POLYLINE medía 0.
+                estado["ilegibles"][t] += 1
+
+    for esp in espacios:
+        recorrer(esp, 0, "model" if esp.name.lower() == "model" else "layout " + esp.name, "")
     capas = [c.dxf.name for c in d.layers]
+    estados_capa = {"congeladas": [c.dxf.name for c in d.layers if c.is_frozen()],
+                    "apagadas": [c.dxf.name for c in d.layers if c.is_off()],
+                    "bloqueadas": [c.dxf.name for c in d.layers if c.is_locked()]}
     xrefs = []
     try:
         for b in d.blocks:
@@ -331,51 +482,84 @@ def dwg_medir(ruta, dest):
     ext = None
     try:
         ext = (d.header.get("$EXTMIN"), d.header.get("$EXTMAX"))
-    except Exception: pass
+        # Sin actualizar, la cabecera trae ±1e20: no es una extensión, es "desconocida".
+        if not ext[0] or not ext[1] or any(abs(v) >= 1e19 for v in (*ext[0][:2], *ext[1][:2])) \
+                or ext[0][0] > ext[1][0] or ext[0][1] > ext[1][1]:
+            from ezdxf import bbox
+            caja = bbox.extents(d.modelspace(), fast=True)
+            ext = (tuple(caja.extmin), tuple(caja.extmax)) if caja.has_data else None
+    except Exception:
+        ext = None
     # detalle a CSV: el dato fino se consulta, no se lee
     import csv as _csv
     with io.open(os.path.join(dest, "dwg_textos.csv"), "w", encoding="utf-8", newline="") as f:
-        w = _csv.writer(f, delimiter=";"); w.writerow(["capa", "texto"]); w.writerows(textos)
+        w = _csv.writer(f, delimiter=";"); w.writerow(["capa", "texto", "origen"])
+        w.writerows((capa, texto, origen) for capa, origen, texto in textos)
     with io.open(os.path.join(dest, "dwg_geometria.csv"), "w", encoding="utf-8", newline="") as f:
         w = _csv.writer(f, delimiter=";"); w.writerow(["capa", "longitud_unidades_dibujo"])
         w.writerows([(c, round(v, 3)) for c, v in largo_capa.most_common()])
-    return {"entidades": n_ent, "espacios": len(espacios), "textos": textos, "bloques": bloques,
-            "largo_capa": largo_capa, "tipos": tipos, "capas": capas, "xrefs": xrefs,
-            "extension": ext, "unidad_declarada": d.header.get("$INSUNITS")}
+    return {"entidades": estado["entidades"], "espacios": len(espacios), "textos": textos, "bloques": bloques,
+            "largo_capa": largo_capa, "tipos": tipos, "capas": capas, "estados_capa": estados_capa,
+            "xrefs": xrefs, "extension": ext, "unidad_declarada": d.header.get("$INSUNITS"),
+            "truncado": estado["truncado"], "sin_expandir": estado["sin_expandir"],
+            "ilegibles": estado["ilegibles"]}
 
 
 def dwg_md(ruta, nombre, dest):
+    import re as _re
     m = dwg_medir(ruta, dest)
-    md = ["# %s" % os.path.splitext(nombre)[0], "",
+    celda = lambda valor: md_cell(valor)
+    md = ["# %s" % md_text(os.path.splitext(nombre)[0]), "",
           "> 🖼️ **Plano CAD medido, no transcrito.** El dibujo no se convierte a texto: se cataloga "
           "lo que el archivo declara. El detalle fino vive en `dwg_textos.csv` y `dwg_geometria.csv`.", "",
           "| Dato | Valor |", "|---|---|",
-          "| Entidades | %d |" % m["entidades"],
+          "| Entidades | %d |" % m["entidades"],     # incluye las de bloques expandidos
           "| Espacios leídos | %d (model + layouts) |" % m["espacios"],
-          "| Textos y atributos | %d |" % len(m["textos"]),
+          "| Textos, atributos y cotas | %d |" % len(m["textos"]),
           "| Bloques insertados | %d (%d nombres distintos) |" % (sum(m["bloques"].values()), len(m["bloques"])),
           "| Capas | %d |" % len(m["capas"]),
-          "| Xrefs | %s |" % (", ".join(m["xrefs"]) if m["xrefs"] else "ninguna"),
-          "| `$INSUNITS` declarado | %s ⚠️ *una cabecera declara una intención; la unidad se deduce del dato* |" % m["unidad_declarada"],
-          ""]
-    if m["extension"] and all(m["extension"]):
+          "| Xrefs | %s |" % (celda(", ".join(m["xrefs"])) if m["xrefs"] else "ninguna"),
+          "| `$INSUNITS` declarado | %s ⚠️ *una cabecera declara una intención; la unidad se deduce del dato* |" % m["unidad_declarada"]]
+    if m["extension"]:
         (a, b) = m["extension"]
-        md += ["| Extensión del dibujo | X %.1f a %.1f · Y %.1f a %.1f |" % (a[0], b[0], a[1], b[1]), ""]
+        md.append("| Extensión del dibujo | X %.1f a %.1f · Y %.1f a %.1f |" % (a[0], b[0], a[1], b[1]))
+    else:
+        md.append("| Extensión del dibujo | no declarada ni calculable |")
+    md.append("")
+    if m["truncado"] or m["sin_expandir"]:
+        md += ["> ⚠️ **Medición incompleta:** %s%s." % (
+            "se alcanzó el tope de %d entidades" % CAD_MAX_ENTIDADES if m["truncado"] else "",
+            (" · %d bloques sin expandir (profundidad o definición ausente)" % m["sin_expandir"]) if m["sin_expandir"] else ""), ""]
+    if m["ilegibles"]:
+        md += ["> ⚠️ **Entidades no medidas por error de lectura:** %s. Su texto/longitud no está en las tablas." % (
+            ", ".join("%s ×%d" % (tipo, n) for tipo, n in m["ilegibles"].most_common())), ""]
+    estados = m["estados_capa"]
+    if any(estados.values()):
+        md += ["## Capas con estado especial", "", "| Estado | Capas |", "|---|---|"]
+        md += ["| %s | %s |" % (clave, celda(", ".join(valor))) for clave, valor in estados.items() if valor]
+        md += ["", "> El contenido de estas capas se cataloga igual: ocultar una capa no la borra del plano.", ""]
     if m["bloques"]:
         md += ["## Bloques por nombre (lo que un PDF no puede contener)", "", "| Bloque | Veces |", "|---|---:|"]
-        md += ["| %s | %d |" % (n, c) for n, c in m["bloques"].most_common(25)]
+        md += ["| %s | %d |" % (celda(n), c) for n, c in m["bloques"].most_common(25)]
         md += [""]
     if m["largo_capa"]:
         md += ["## Longitud por capa (unidades de dibujo)", "",
                "> El canal que un extractor de solo textos descarta: aquí vive el metrado lineal.", "",
                "| Capa | Longitud |", "|---|---:|"]
-        md += ["| %s | %.2f |" % (c, v) for c, v in m["largo_capa"].most_common(25)]
+        md += ["| %s | %.2f |" % (celda(c), v) for c, v in m["largo_capa"].most_common(25)]
         md += [""]
-    largos = [t for _, t in m["textos"] if len(t.strip()) > 12]
-    if largos:
-        md += ["## Textos del plano (primeros 60; el resto en el CSV)", ""]
-        md += ["- %s" % t.strip() for t in largos[:60]] + [""]
-    md += ["## Testigo", "> «%s»" % (largos[0].strip()[:90] if largos else nombre)]
+    # Textos con palabras (no cotas sueltas «1.20»), sin repetir: cada uno con sus apariciones.
+    conteo = {}
+    for _capa, _origen, texto in m["textos"]:
+        if _re.search(r"[^\W\d_]{2,}", texto):
+            conteo[texto] = conteo.get(texto, 0) + 1
+    if conteo:
+        md += ["## Textos del plano (%d distintos%s; todo en el CSV)" % (
+            len(conteo), ", primeros 120" if len(conteo) > 120 else ""), ""]
+        md += ["- %s%s" % (md_text(t.strip())[:400], " (×%d)" % n if n > 1 else "") for t, n in list(conteo.items())[:120]]
+        md += [""]
+    testigo = next(iter(conteo), nombre)
+    md += ["## Testigo", "> «%s»" % md_text(testigo.strip()[:90])]
     return "\n".join(md), m["entidades"]
 
 
@@ -505,9 +689,13 @@ def pptx_texto(ruta, dest):
     CON_CONTENIDO = {3, 6, 7, 13, 16, 19, 21}
     with open(ruta, "rb") as stream:
         pr = Presentation(stream)
+    # DrawingML usa el mismo escape «_xHHHH_» que SpreadsheetML (python-pptx escribe «\r» así).
+    texto = decode_ooxml_escapes
     md = []; visual = 0; visuales = set()
     for i, s in enumerate(pr.slides, 1):
-        md.append("## Diapositiva %d" % i)
+        # show="0": diapositiva oculta en la presentación; se publica, marcada como en Excel.
+        oculta = " *(oculta)*" if s._element.get("show") in {"0", "false"} else ""
+        md.append("## Diapositiva %d%s" % (i, oculta))
         sueltas = 0
         def walk(shapes):
             for shape in shapes:
@@ -520,15 +708,17 @@ def pptx_texto(ruta, dest):
         etiquetas = {}
         for sh in walk(s.shapes):
             if sh.has_text_frame and sh.text_frame.text.strip():
-                etiquetas[sh.shape_id] = sh.text_frame.text.strip().splitlines()[0][:60]
+                etiquetas[sh.shape_id] = texto(sh.text_frame.text).strip().splitlines()[0][:60]
         conectores = []
         for sh in walk(s.shapes):
             if sh.has_text_frame and sh.text_frame.text.strip():
-                md.append(sh.text_frame.text.strip())
+                # Texto de la forma como prosa literal: un «| a |» o «```» no crea tablas ni código.
+                md.extend([md_text(texto(sh.text_frame.text).strip()), ""])
             elif sh.has_table:
                 md.extend(["", "| " + " | ".join(f"Columna {n+1}" for n in range(len(sh.table.columns))) + " |",
                            "| " + " | ".join("---" for _ in sh.table.columns) + " |"])
-                md.extend("| " + " | ".join(md_cell(c.text) for c in row.cells) + " |" for row in sh.table.rows)
+                md.extend("| " + " | ".join(md_cell(texto(c.text)) for c in row.cells) + " |" for row in sh.table.rows)
+                md.append("")                  # GFM: sin línea en blanco, el texto siguiente sería otra fila
             elif sh.shape_type is not None:
                 visual += 1
                 try: tipo = int(sh.shape_type)
@@ -553,7 +743,12 @@ def pptx_texto(ruta, dest):
             md.append("> **Conector:** %s [figuras %s, %s; conector %s]" % (
                 _pptx_connector_description(sh, origen, destino), ini, fin, sh.shape_id))
         if sueltas >= 4: visuales.add(i)         # muchas formas sueltas = diagrama dibujado a mano
+        if md[-1].startswith("## Diapositiva "):
+            md.append("*(diapositiva sin contenido)*")
         if s.has_notes_slide and s.notes_slide.notes_text_frame.text.strip():
-            md.append("> **Notas del orador:** " + s.notes_slide.notes_text_frame.text.strip())
+            # Cada línea dentro de la cita: antes solo la primera quedaba citada.
+            notas = md_text(texto(s.notes_slide.notes_text_frame.text).strip()).split("\n")
+            md.append("> **Notas del orador:** " + notas[0])
+            md.extend((">" + (" " + linea if linea.strip() else "")) for linea in notas[1:])
         md.append("")
     return "\n".join(md), visual, visuales

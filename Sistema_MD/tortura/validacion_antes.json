@@ -1,0 +1,647 @@
+{
+  "errores": 50,
+  "avisos": 15,
+  "errores_por_regla": {
+    "A4": 3,
+    "A5": 2,
+    "E2": 18,
+    "F1": 15,
+    "X1": 5,
+    "X2": 7
+  },
+  "paquetes": [
+    {
+      "paquete": "corrupto_basura_pdf",
+      "estado": "excepcion",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "corrupto_dxf_truncado_dxf",
+      "estado": "excepcion",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "corrupto_png_truncado_png",
+      "estado": "sin_adaptador",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "corrupto_vacio_docx",
+      "estado": "sin_adaptador",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "corrupto_xml_roto_docx",
+      "estado": "excepcion",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "corrupto_zip_truncado_xlsx",
+      "estado": "sin_adaptador",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "mentira_excel_llamado_pptx",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 2,
+      "tablas": 15,
+      "errores": 6
+    },
+    {
+      "paquete": "stress_cad_dxf",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 4,
+      "errores": 3
+    },
+    {
+      "paquete": "stress_cad_falso_dwg",
+      "estado": "excepcion",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "stress_excel_xls",
+      "estado": "sin_adaptador",
+      "esperado": "convertir",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "stress_excel_xlsb",
+      "estado": "excepcion",
+      "esperado": "convertir",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "stress_excel_xlsm",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 2,
+      "tablas": 15,
+      "errores": 8
+    },
+    {
+      "paquete": "stress_excel_xlsx",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 2,
+      "tablas": 15,
+      "errores": 8
+    },
+    {
+      "paquete": "stress_imagen_en_blanco_png",
+      "estado": "sin_adaptador",
+      "esperado": "convertir",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "stress_ocr_jpg",
+      "estado": "sin_adaptador",
+      "esperado": "convertir",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "stress_ocr_png",
+      "estado": "sin_adaptador",
+      "esperado": "convertir",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "stress_ocr_tiff",
+      "estado": "sin_adaptador",
+      "esperado": "convertir",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "stress_pdf_pdf",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "stress_powerpoint_ppt",
+      "estado": "sin_adaptador",
+      "esperado": "convertir",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "stress_powerpoint_pptx",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 1,
+      "errores": 3
+    },
+    {
+      "paquete": "stress_word_doc",
+      "estado": "sin_adaptador",
+      "esperado": "convertir",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 1
+    },
+    {
+      "paquete": "stress_word_docx",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 1,
+      "errores": 9
+    }
+  ],
+  "hallazgos": [
+    {
+      "nivel": "ERROR",
+      "regla": "X1",
+      "archivo": "corrupto_basura_pdf",
+      "linea": null,
+      "detalle": "excepcion: FileDataError Failed to open file '/home/user/Pagina_referencia/Sistema_MD/tortura/stress_test_suite/corrupto_basura.pdf'."
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "X1",
+      "archivo": "corrupto_dxf_truncado_dxf",
+      "linea": null,
+      "detalle": "excepcion: DXFStructureError DXFStructureError: missing ENDSEC tag."
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "X1",
+      "archivo": "corrupto_xml_roto_docx",
+      "linea": null,
+      "detalle": "excepcion: XMLSyntaxError Premature end of data in tag r line 2, line 2, column 4688 (<string>, line 2)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "mentira_excel_llamado_pptx/derivados/rejilla_original.md",
+      "linea": 10,
+      "detalle": "escape OOXML crudo _x000D_ (debió decodificarse)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "mentira_excel_llamado_pptx/derivados/rejilla_original.md",
+      "linea": 10,
+      "detalle": "escape OOXML crudo _x0007_ (debió decodificarse)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "mentira_excel_llamado_pptx/derivados/rejilla_original.md",
+      "linea": 10,
+      "detalle": "escape OOXML crudo _x0000_ (debió decodificarse)"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "mentira_excel_llamado_pptx/derivados/rejilla_original.md",
+      "linea": 79,
+      "detalle": "sección vacía: 'Hoja: Hoja vacía'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "mentira_excel_llamado_pptx/documento.md",
+      "linea": 43,
+      "detalle": "escape OOXML crudo _x000D_ (debió decodificarse)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "mentira_excel_llamado_pptx/documento.md",
+      "linea": 43,
+      "detalle": "escape OOXML crudo _x0007_ (debió decodificarse)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "mentira_excel_llamado_pptx/documento.md",
+      "linea": 43,
+      "detalle": "escape OOXML crudo _x0000_ (debió decodificarse)"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "mentira_excel_llamado_pptx/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "mentira_excel_llamado_pptx/documento.md",
+      "linea": 29,
+      "detalle": "sección vacía: 'Hojas principales'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "mentira_excel_llamado_pptx/documento.md",
+      "linea": 168,
+      "detalle": "sección vacía: 'Hojas auxiliares'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "A4",
+      "archivo": "stress_cad_dxf/documento.md",
+      "linea": 33,
+      "detalle": "tabla sin fila separador |---| bajo el encabezado: '| Extensión del dibujo | X 100000000000000000000.0 a -100000000000000000000.0 · '"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_cad_dxf/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_cad_dxf/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'perno | M12'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_cad_dxf/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'mm | cota'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "X1",
+      "archivo": "stress_cad_falso_dwg",
+      "linea": null,
+      "detalle": "excepcion: RuntimeError Falta ODA File Converter. Instálalo por su vía oficial o indica su ejecutable con SISTEMA_MD_ODA."
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "X2",
+      "archivo": "stress_excel_xls",
+      "linea": null,
+      "detalle": "resultado «sin_adaptador» pero se esperaba «convertir»: sin adaptador para «office-legacy»: Esta versión convierte texto/MD. Usa preparar-pdf o importar-paginas para PDF."
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "X1",
+      "archivo": "stress_excel_xlsb",
+      "linea": null,
+      "detalle": "excepcion: OSError File contains no valid workbook part"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "stress_excel_xlsm/derivados/rejilla_original.md",
+      "linea": 10,
+      "detalle": "escape OOXML crudo _x000D_ (debió decodificarse)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "stress_excel_xlsm/derivados/rejilla_original.md",
+      "linea": 10,
+      "detalle": "escape OOXML crudo _x0007_ (debió decodificarse)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "stress_excel_xlsm/derivados/rejilla_original.md",
+      "linea": 10,
+      "detalle": "escape OOXML crudo _x0000_ (debió decodificarse)"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsm/derivados/rejilla_original.md",
+      "linea": 79,
+      "detalle": "sección vacía: 'Hoja: Hoja vacía'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "stress_excel_xlsm/documento.md",
+      "linea": 43,
+      "detalle": "escape OOXML crudo _x000D_ (debió decodificarse)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "stress_excel_xlsm/documento.md",
+      "linea": 43,
+      "detalle": "escape OOXML crudo _x0007_ (debió decodificarse)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "stress_excel_xlsm/documento.md",
+      "linea": 43,
+      "detalle": "escape OOXML crudo _x0000_ (debió decodificarse)"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsm/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsm/documento.md",
+      "linea": 29,
+      "detalle": "sección vacía: 'Hojas principales'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsm/documento.md",
+      "linea": 168,
+      "detalle": "sección vacía: 'Hojas auxiliares'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_excel_xlsm/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'Retorno escapado'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_excel_xlsm/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'Campo 35'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "stress_excel_xlsx/derivados/rejilla_original.md",
+      "linea": 10,
+      "detalle": "escape OOXML crudo _x000D_ (debió decodificarse)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "stress_excel_xlsx/derivados/rejilla_original.md",
+      "linea": 10,
+      "detalle": "escape OOXML crudo _x0007_ (debió decodificarse)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "stress_excel_xlsx/derivados/rejilla_original.md",
+      "linea": 10,
+      "detalle": "escape OOXML crudo _x0000_ (debió decodificarse)"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsx/derivados/rejilla_original.md",
+      "linea": 79,
+      "detalle": "sección vacía: 'Hoja: Hoja vacía'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "stress_excel_xlsx/documento.md",
+      "linea": 43,
+      "detalle": "escape OOXML crudo _x000D_ (debió decodificarse)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "stress_excel_xlsx/documento.md",
+      "linea": 43,
+      "detalle": "escape OOXML crudo _x0007_ (debió decodificarse)"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "E2",
+      "archivo": "stress_excel_xlsx/documento.md",
+      "linea": 43,
+      "detalle": "escape OOXML crudo _x0000_ (debió decodificarse)"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsx/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsx/documento.md",
+      "linea": 29,
+      "detalle": "sección vacía: 'Hojas principales'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsx/documento.md",
+      "linea": 168,
+      "detalle": "sección vacía: 'Hojas auxiliares'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_excel_xlsx/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'Retorno escapado'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_excel_xlsx/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'Campo 35'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "X2",
+      "archivo": "stress_imagen_en_blanco_png",
+      "linea": null,
+      "detalle": "resultado «sin_adaptador» pero se esperaba «convertir»: sin adaptador para «png»: Esta versión convierte texto/MD. Usa preparar-pdf o importar-paginas para PDF."
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "X2",
+      "archivo": "stress_ocr_jpg",
+      "linea": null,
+      "detalle": "resultado «sin_adaptador» pero se esperaba «convertir»: sin adaptador para «jpg»: Esta versión convierte texto/MD. Usa preparar-pdf o importar-paginas para PDF."
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "X2",
+      "archivo": "stress_ocr_png",
+      "linea": null,
+      "detalle": "resultado «sin_adaptador» pero se esperaba «convertir»: sin adaptador para «png»: Esta versión convierte texto/MD. Usa preparar-pdf o importar-paginas para PDF."
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "X2",
+      "archivo": "stress_ocr_tiff",
+      "linea": null,
+      "detalle": "resultado «sin_adaptador» pero se esperaba «convertir»: sin adaptador para «tif»: Esta versión convierte texto/MD. Usa preparar-pdf o importar-paginas para PDF."
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_pdf_pdf/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'INFORME ESCANEADO'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "X2",
+      "archivo": "stress_powerpoint_ppt",
+      "linea": null,
+      "detalle": "resultado «sin_adaptador» pero se esperaba «convertir»: sin adaptador para «office-legacy»: Esta versión convierte texto/MD. Usa preparar-pdf o importar-paginas para PDF."
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "A4",
+      "archivo": "stress_powerpoint_pptx/documento.md",
+      "linea": 26,
+      "detalle": "tabla sin fila separador |---| bajo el encabezado: '| a | b |'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "A5",
+      "archivo": "stress_powerpoint_pptx/documento.md",
+      "linea": 27,
+      "detalle": "bloque de código ``` abierto y nunca cerrado"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_powerpoint_pptx/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_powerpoint_pptx/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'Diapositiva 6 *(oculta)*'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "X2",
+      "archivo": "stress_word_doc",
+      "linea": null,
+      "detalle": "resultado «sin_adaptador» pero se esperaba «convertir»: sin adaptador para «office-legacy»: Esta versión convierte texto/MD. Usa preparar-pdf o importar-paginas para PDF."
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "A4",
+      "archivo": "stress_word_docx/documento.md",
+      "linea": 27,
+      "detalle": "tabla sin fila separador |---| bajo el encabezado: '| a | b | c |'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "A5",
+      "archivo": "stress_word_docx/documento.md",
+      "linea": 33,
+      "detalle": "bloque de código ``` abierto y nunca cerrado"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_word_docx/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_word_docx/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'Nota al pie con | pipe'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_word_docx/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'Segunda nota'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_word_docx/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'Nota final: fuente [1] {llaves}'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_word_docx/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'anidada 0.0 |'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_word_docx/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'nivel 3'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_word_docx/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: '`profunda`'"
+    },
+    {
+      "nivel": "ERROR",
+      "regla": "F1",
+      "archivo": "stress_word_docx/documento.md",
+      "linea": null,
+      "detalle": "contenido del original ausente: 'a|b'"
+    }
+  ]
+}

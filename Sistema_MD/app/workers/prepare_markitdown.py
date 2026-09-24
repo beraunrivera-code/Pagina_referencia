@@ -2,20 +2,50 @@
 
 Sin --install solo muestra el plan. Con --install crea el worker nuevo y usa PyPI.
 Esta es una preparación técnica, no un instalador comercial firmado/autónomo.
-El lock actual corresponde únicamente a Windows x64, CPython 3.12.
+Cada plataforma usa su propio lock controlado (Windows x64 o Linux x86_64, CPython 3.12);
+otra combinación se rechaza en lugar de suponer compatibilidad.
 """
 import argparse
 import hashlib
 import json
 import os
 from pathlib import Path
+import platform
 import subprocess
 import sys
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
 TARGET = ROOT / "workers" / "markitdown" / ".venv"
-LOCK = Path(__file__).with_name("requirements-markitdown-win-py312.lock")
+LOCKS = {"windows": Path(__file__).with_name("requirements-markitdown-win-py312.lock"),
+         "linux": Path(__file__).with_name("requirements-markitdown-linux-py312.lock")}
+
+
+def _platform_key():
+    if os.name == "nt":
+        return "windows"
+    if sys.platform.startswith("linux") and platform.machine().lower() in {"x86_64", "amd64"}:
+        return "linux"
+    return None
+
+
+def _lock():
+    key = _platform_key()
+    if key is None:
+        raise ValueError("No hay lock validado para esta plataforma; requiere su propio control")
+    return LOCKS[key]
+
+
+def _venv_python(target=None):
+    """Intérprete dentro de la venv con la disposición propia de cada sistema."""
+    target = TARGET if target is None else target
+    return target / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+
+
+def _base_python_name_valid(python):
+    if os.name == "nt":
+        return python.name.lower() in {"python.exe", "python3.exe"}
+    return python.name in {"python", "python3", "python3.12"}
 
 
 def _marker_path():
@@ -25,7 +55,7 @@ def _marker_path():
 def _marker_value(python, state):
     return {"version": 1, "owner": "sistema-md-markitdown", "root": str(ROOT.resolve()),
         "target": str(TARGET.resolve()), "base_python": str(Path(python).resolve()),
-        "lock_sha256": hashlib.sha256(LOCK.read_bytes()).hexdigest(), "state": state}
+        "lock_sha256": hashlib.sha256(_lock().read_bytes()).hexdigest(), "state": state}
 
 
 def _write_marker(value):
@@ -68,25 +98,27 @@ def _resume_state(python, resume):
 
 def command_plan(python):
     python = Path(python).resolve(strict=True)
-    if not python.is_file() or python.name.lower() not in {"python.exe", "python3.exe"}:
-        raise ValueError("Selecciona python.exe local de CPython 3.12 x64")
+    if not python.is_file() or not _base_python_name_valid(python):
+        raise ValueError("Selecciona el intérprete local de CPython 3.12 x64 (python.exe / python3)")
     if str(python).startswith(("\\\\", "//")):
         raise ValueError("No se ejecutan intérpretes desde una ruta de red")
     if not TARGET.resolve().is_relative_to(ROOT.resolve()) or TARGET.name != ".venv":
         raise ValueError("Destino del worker fuera de la instalación")
-    executable = TARGET / "Scripts/python.exe"
+    executable = _venv_python()
+    lock = _lock()
     return [
         [str(python), "-I", "-m", "venv", str(TARGET)],
         [str(executable), "-I", "-m", "pip", "--isolated", "install", "--index-url", "https://pypi.org/simple",
          "--only-binary=:all:", "--no-deps", "--disable-pip-version-check", "--retries", "0", "--timeout", "30",
-         "-r", str(LOCK)],
+         "-r", str(lock)],
         [str(executable), "-I", "-m", "pip", "--isolated", "check"],
     ]
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--python", required=True, help='Ruta al Python base local; ej. "C:\\Python312\\python.exe"')
+    parser.add_argument("--python", required=True,
+                        help='Ruta al Python base local; ej. "C:\\Python312\\python.exe" o /usr/bin/python3.12')
     parser.add_argument("--install", action="store_true", help="Autoriza crear la venv nueva y descargar ruedas de PyPI")
     parser.add_argument("--resume", action="store_true", help="Reanuda solo una instalación incompleta propia, con el mismo Python/raíz/lock")
     args = parser.parse_args(argv)
@@ -96,10 +128,8 @@ def main(argv=None):
             raise ValueError("--resume requiere --install explícito")
         if not args.install:
             print(json.dumps({"action": "plan_only", "target": str(TARGET), "commands": commands,
-                "notice": "Requiere Windows x64 / Python 3.12 local. No copia .venv ni instala sin --install."}, ensure_ascii=False, indent=2))
+                "notice": "Requiere Python 3.12 x64 local (Windows o Linux). No copia .venv ni instala sin --install."}, ensure_ascii=False, indent=2))
             return 0
-        if os.name != "nt":
-            raise ValueError("El lock validado es para Windows x64; otra plataforma requiere su propio control")
         state = _resume_state(args.python, args.resume)
         check = subprocess.run([str(Path(args.python).resolve()), "-I", "-c",
             "import json,sys,struct;print(json.dumps([sys.version_info[:2],struct.calcsize('P')*8]))"],
@@ -118,7 +148,7 @@ def main(argv=None):
             subprocess.run(commands[0], check=True, timeout=900,
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
             _write_marker(_marker_value(args.python, "installing"))
-        elif not (TARGET / "Scripts/python.exe").is_file():
+        elif not _venv_python().is_file():
             raise ValueError("Worker parcial sin Python; no se continúa como si estuviera creado")
         for command in commands[1:]:
             subprocess.run(command, check=True, timeout=900,

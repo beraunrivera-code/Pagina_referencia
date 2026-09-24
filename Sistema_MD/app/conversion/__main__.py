@@ -9,7 +9,7 @@ from pathlib import Path
 from .documents import parse_pages
 from .diagnostics import export_failure_report, record_failure, repair_safe, run_diagnostics, resolve_failure
 from .jobs import import_answer, prepare_job
-from .pipeline import NATIVE_KINDS, convert_native, convert_text, detect, doctor, import_pages, inventory, prepare_pdf
+from .pipeline import NATIVE_KINDS, convert_any, convert_native, convert_text, detect, doctor, import_pages, inventory, prepare_pdf
 from .selector import choose_and_process, use_path
 from .storage import export_index, report
 from .workflow import WorkQueue
@@ -108,7 +108,7 @@ def main(argv: list[str] | None = None) -> int:
     scan = sub.add_parser("inventariar", help="Identifica por contenido y calcula SHA-256")
     scan.add_argument("ruta", type=Path)
     scan.add_argument("--limite", type=int, default=200)
-    convert = sub.add_parser("convertir", help="Convierte TXT/MD y Word/Excel/PowerPoint/Visio/DWG/DXF a paquete trazable, sin IA")
+    convert = sub.add_parser("convertir", help="Convierte TXT/MD, Word/Excel/PowerPoint (también DOC/XLS/PPT/XLSB), Visio, DWG/DXF, PDF e imágenes (OCR) a paquete trazable, sin IA")
     convert.add_argument("ruta", type=Path)
     pages = sub.add_parser("importar-paginas", help="Integra páginas MD ya producidas por Claude/Gemini/DeepSeek")
     pages.add_argument("carpeta", type=Path)
@@ -210,10 +210,8 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "inventariar":
             result = inventory(args.ruta, args.limite, args.salida)
         elif args.command == "convertir":
-            if args.ruta.is_file() and detect(args.ruta) in NATIVE_KINDS:
-                result = convert_native(args.salida, args.ruta)
-            else:
-                result = convert_text(args.salida, args.ruta)
+            # Una sola ruta para todos los formatos: detecta por contenido y rechaza con causa.
+            result = convert_any(args.salida, args.ruta) if args.ruta.is_file() else convert_text(args.salida, args.ruta)
         elif args.command == "importar-paginas":
             result = import_pages(args.salida, args.carpeta, args.prefijo, parse_pages(args.paginas),
                                   args.motor, args.titulo, args.imagenes, args.contrato_referencia)

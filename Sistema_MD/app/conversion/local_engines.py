@@ -60,8 +60,18 @@ def _config():
     return value
 
 
-def _portable(path):
-    path = Path(path).resolve()
+def _interpreter(path):
+    """Ruta canónica de un intérprete SIN seguir su enlace en POSIX.
+
+    En Linux ``.venv/bin/python`` es un enlace al Python base: resolverlo lanza el Python
+    del sistema, que ya no ve la venv (la detecta por la ruta invocada) y el motor «falta».
+    En Windows ``python.exe`` es una copia real y se conserva la resolución completa.
+    """
+    return Path(path).resolve() if os.name == "nt" else Path(os.path.abspath(path))
+
+
+def _portable(path, interpreter=False):
+    path = _interpreter(path) if interpreter else Path(path).resolve()
     base = CONFIG_PATH.parent.resolve()
     return path.relative_to(base).as_posix() if path.is_relative_to(base) else str(path)
 
@@ -96,9 +106,9 @@ def configure_engine(engine, python, models_path=None):
     """Guarda rutas locales (str/Path), nunca claves. No instala ni ejecuta modelos."""
     executable = engine_python(engine, python)
     forced = os.environ.get(f"SISTEMA_MD_{engine.upper()}_PYTHON")
-    if forced and Path(forced).resolve() != executable:
+    if forced and _interpreter(forced) != executable:
         raise ValueError(f"SISTEMA_MD_{engine.upper()}_PYTHON fija otro intérprete; ajusta esa variable antes de guardar otra ruta")
-    entry = {"python": _portable(executable)}
+    entry = {"python": _portable(executable, interpreter=True)}
     if models_path:
         if engine != "docling":
             raise ValueError("MarkItDown no usa una carpeta de pesos Docling")
@@ -138,7 +148,7 @@ def engine_python(engine, python=None):
         raise LocalEngineError("python_missing")
     if not re.fullmatch(r"python(?:\d+(?:\.\d+)*)?(?:\.exe)?", path.name, re.I) or not path.is_file():
         raise LocalEngineError("python_missing")
-    return path.resolve()
+    return _interpreter(path)
 
 
 def _environment(folder):

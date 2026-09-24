@@ -29,7 +29,7 @@ class WorkerBootstrapTests(TestCase):
             if command[2] == "-c":
                 return subprocess.CompletedProcess(command, 0, stdout='[[3, 12], 64]')
             if "venv" in command:
-                executable = module.TARGET / "Scripts/python.exe"
+                executable = module._venv_python()
                 executable.parent.mkdir(parents=True)
                 executable.write_bytes(b"synthetic-do-not-execute")
                 return subprocess.CompletedProcess(command, 0)

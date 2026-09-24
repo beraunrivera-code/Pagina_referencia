@@ -168,10 +168,23 @@ class VistaTests(unittest.TestCase):
     def test_apertura_con_ancla_conserva_el_salto_en_fallback(self):
         carpeta = self._paquete()
         vista = write_view(carpeta)
-        with patch("conversion.visor.winreg", None), patch("conversion.visor.os.startfile") as abrir:
+        with patch("conversion.visor.winreg", None), \
+                patch("conversion.visor.open_with_system", return_value="asociacion") as abrir:
             via = open_in_browser(vista, "seccion dos")
         self.assertEqual(via, "asociacion")
         self.assertEqual(abrir.call_args.args[0], vista.as_uri() + "#seccion%20dos")
+
+    def test_headless_no_lanza_procesos_y_conserva_la_vista(self):
+        carpeta = self._paquete()
+        vista = write_view(carpeta)
+        with patch("conversion.visor.winreg", None), \
+                patch("conversion.platform_support.is_windows", return_value=False), \
+                patch.dict("os.environ", {}, clear=True), \
+                patch("conversion.platform_support.subprocess.Popen") as lanzar:
+            via = open_in_browser(vista)
+        self.assertEqual(via, "headless")
+        lanzar.assert_not_called()
+        self.assertTrue(vista.is_file())
 
     def test_rechaza_si_el_manifiesto_ya_declara_la_vista(self):
         carpeta = self._paquete()

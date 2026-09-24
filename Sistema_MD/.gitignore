@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+.venv-local/
+workers/markitdown/.venv/
+workers/*/preparacion*.json
+app/tests/_runs/
+logs/
+datos/
+MD/
+sistema_md.json
+vendor/*.deb
+# Banco de tortura: se regenera con tortura/generar_tortura_multiformato.py
+tortura/stress_test_suite/
+tortura/output_stress/
+tortura/conversion_stress.log
+tortura/validacion.json

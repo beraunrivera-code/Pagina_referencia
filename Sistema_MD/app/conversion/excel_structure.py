@@ -9,6 +9,10 @@ confianza media y una referencia de celdas verificable.
 La vista de lectura y la rejilla original son dos productos distintos. La
 primera puede dividir una tabla ancha y repetir sus identificadores; la segunda
 conserva todas las coordenadas y columnas para auditoría.
+
+ADN de 3 capas, capa 1: cada encabezado textual conserva su letra física de
+columna (``| Código [A] | Total [C] |``) para citar la celda exacta del XLSX.
+Una hoja no visible se titula siempre ``## Hoja: Nombre *(oculta)*``.
 """
 
 from __future__ import annotations
@@ -18,8 +22,9 @@ import html
 from collections import deque
 
 
-STRUCTURE_VERSION = 1
+STRUCTURE_VERSION = 2
 MAX_READER_COLUMNS = 9
+HIDDEN_MARK = " *(oculta)*"
 
 
 def _letter(column: int) -> str:
@@ -28,6 +33,17 @@ def _letter(column: int) -> str:
         column, rest = divmod(column - 1, 26)
         value = chr(65 + rest) + value
     return value
+
+
+def _header_label(header: str, column: int) -> str:
+    """Encabezado Markdown con referencia exacta: ``Código [A]``. Sin texto, solo la letra."""
+    letter = _letter(column)
+    header = header or letter
+    return header if header == letter else f"{header} [{letter}]"
+
+
+def hidden_mark(state: str) -> str:
+    return HIDDEN_MARK if state != "visible" else ""
 
 
 def _range(min_row: int, min_col: int, max_row: int, max_col: int) -> str:
@@ -166,6 +182,7 @@ def _split_table(spec: dict, rows: dict[int, dict[int, str]], merges: list[dict]
             "confidence": "alta" if group["evidence"] != "encabezados de la tabla" else "media",
             "evidence": group["evidence"],
             "columns": shown,
+            "column_letters": [_letter(column) for column in shown],
             "headers": [headers[column] for column in shown],
             "data_rows": list(range(spec["min_row"] + 1, spec["max_row"] + 1)),
             "repeated_columns": [column for column in keys if column not in data_columns],
@@ -212,7 +229,8 @@ def _region_block(region: set, rows: dict[int, dict[int, str]]) -> dict:
     headers = [_letter(column) for column in columns]
     return {"kind": "table", "title": f"Bloque {source_ref}", "source_ref": source_ref,
             "confidence": "media", "evidence": "región continua de celdas",
-            "columns": columns, "headers": headers, "data_rows": data_rows,
+            "columns": columns, "headers": headers,
+            "column_letters": [_letter(column) for column in columns], "data_rows": data_rows,
             "repeated_columns": []}
 
 
@@ -236,6 +254,7 @@ def structure_sheet(sheet: dict) -> dict:
             blocks.append({"kind": "table", "title": name, "source_ref": spec["ref"],
                            "confidence": "alta", "evidence": "tabla nativa del XLSX",
                            "columns": columns, "headers": headers,
+                           "column_letters": [_letter(column) for column in columns],
                            "data_rows": list(range(spec["min_row"] + 1, spec["max_row"] + 1)),
                            "repeated_columns": []})
         table_models.append({"name": name, "ref": spec["ref"], "columns": width,
@@ -269,8 +288,8 @@ def structure_sheet(sheet: dict) -> dict:
 
 
 def _md_table(block: dict, rows: dict[int, dict[int, str]]) -> list[str]:
-    headers = block["headers"]
     columns = block["columns"]
+    headers = [_header_label(header, column) for header, column in zip(block["headers"], columns)]
     output = ["| " + " | ".join(headers) + " |",
               "| " + " | ".join("---" for _ in headers) + " |"]
     for row in block["data_rows"]:
@@ -335,13 +354,14 @@ def build_workbook(title: str, sheets: list[dict]) -> tuple[str, dict]:
             continue
         output += [f"## {group['title']}", ""]
         for section in group["sections"]:
-            hidden_mark = "  *(oculta)*" if section["state"] != "visible" else ""
             stats = section["stats"]
-            output += [f"## Hoja: {section['title']}{hidden_mark}",
+            output += [f"## Hoja: {section['title']}{hidden_mark(section['state'])}",
                        f"filas {stats['rows_with_data']} · columnas con dato {stats['columns_with_data']} · "
                        f"{stats['native_tables']} tablas nativas", "",
                        f"> Rango usado `{section['source_ref']}` · {stats['nonempty_cells']} celdas con dato.", ""]
             sheet = by_name[section["title"]]
+            if not section["blocks"]:
+                output += ["*(hoja sin celdas con datos)*", ""]
             for block in section["blocks"]:
                 output += _render_block(block, sheet["rows"])
     output += ["## Auditoría y fidelidad", "",
