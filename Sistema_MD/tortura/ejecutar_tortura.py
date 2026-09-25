@@ -90,6 +90,32 @@ def _copiar_paquete(origen: Path, destino: Path) -> dict:
             "proveedor": documento.get("provider"), "tipo_entrada": documento.get("input_kind")}
 
 
+def _esperar(proceso) -> tuple[int | str, float | None]:
+    """(código de salida o «timeout», pico de memoria en MB).
+
+    Linux/macOS: ``os.wait4`` da el RSS máximo del hijo (y de sus nietos, p. ej. LibreOffice).
+    Windows no tiene wait4: se mide el tiempo y el pico de memoria queda sin dato (None).
+    """
+    if not hasattr(os, "wait4"):
+        try:
+            return proceso.wait(timeout=TIMEOUT), None
+        except subprocess.TimeoutExpired:
+            proceso.kill()
+            proceso.wait()
+            return "timeout", None
+    limite = time.monotonic() + TIMEOUT
+    while time.monotonic() < limite:
+        pid, estado, uso = os.wait4(proceso.pid, os.WNOHANG)
+        if pid:
+            proceso.returncode = os.waitstatus_to_exitcode(estado)   # ya recogido con wait4
+            return proceso.returncode, round(uso.ru_maxrss / 1024, 1)
+        time.sleep(0.05)
+    proceso.kill()
+    _pid, _estado, uso = os.wait4(proceso.pid, 0)
+    proceso.returncode = -9
+    return "timeout", round(uso.ru_maxrss / 1024, 1)
+
+
 def ejecutar(suite: Path, salida: Path) -> list[dict]:
     esperado = json.loads((suite / "esperado.json").read_text(encoding="utf-8"))
     if salida.exists():
@@ -111,32 +137,20 @@ def ejecutar(suite: Path, salida: Path) -> list[dict]:
                 proceso = subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "--hijo", str(fuente),
                                             "--biblioteca", str(biblioteca), "--resultado", str(resultado)],
                                            stdout=subprocess.DEVNULL, stderr=errores)
-                limite = time.monotonic() + TIMEOUT
-                estado_os, uso = None, None
-                while time.monotonic() < limite:
-                    pid, estado_os, uso = os.wait4(proceso.pid, os.WNOHANG)
-                    if pid:
-                        break
-                    time.sleep(0.05)
-                else:
-                    proceso.kill()
-                    _pid, estado_os, uso = os.wait4(proceso.pid, 0)
-                    estado_os = "timeout"
+                codigo, pico_mb = _esperar(proceso)
                 segundos = round(time.perf_counter() - inicio, 3)
                 errores.seek(0)
                 stderr = errores.read().decode("utf-8", "replace")[-1500:]
                 errores.close()
-                proceso.returncode = 0          # ya recogido con wait4
-                if estado_os == "timeout":
+                if codigo == "timeout":
                     registro = {"archivo": nombre, "estado": "timeout"}
                 elif resultado.is_file():
                     registro = json.loads(resultado.read_text(encoding="utf-8"))
                 else:
-                    registro = {"archivo": nombre, "estado": "caida", "stderr": stderr,
-                                "codigo_salida": os.waitstatus_to_exitcode(estado_os)}
+                    registro = {"archivo": nombre, "estado": "caida", "stderr": stderr, "codigo_salida": codigo}
             registro.update(familia=esperado[nombre]["familia"], esperado=esperado[nombre]["esperado"],
                             debe_contener=esperado[nombre].get("debe_contener", []),
-                            segundos=segundos, pico_memoria_mb=round(uso.ru_maxrss / 1024, 1) if uso else None)
+                            segundos=segundos, pico_memoria_mb=pico_mb)
             if registro["estado"] == "ok" and registro.get("salida"):
                 registro.update(_copiar_paquete(Path(registro["salida"]), destino))
             if registro["esperado"] == "convertir":
@@ -149,8 +163,8 @@ def ejecutar(suite: Path, salida: Path) -> list[dict]:
                                        if k != "traza"}}, ensure_ascii=False) + "\n")
             registros.append(registro)
             marca = "✔" if registro["cumple"] else "✘"
-            print(f"{marca} {nombre:32} {registro['estado']:20} {segundos:7.2f}s "
-                  f"{registro['pico_memoria_mb'] or 0:7.1f} MB  {registro.get('error', '')[:70]}")
+            memoria = f"{registro['pico_memoria_mb']:7.1f} MB" if registro["pico_memoria_mb"] is not None else "   -- MB"
+            print(f"{marca} {nombre:32} {registro['estado']:20} {segundos:7.2f}s {memoria}  {registro.get('error', '')[:70]}")
     return registros
 
 

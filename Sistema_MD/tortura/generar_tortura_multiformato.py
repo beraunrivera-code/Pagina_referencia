@@ -663,6 +663,9 @@ def corruptos(destino: Path, xlsx: Path, docx: Path, pdf_ruta: Path, png: Path) 
 # ================================================================== LEGADO vía LibreOffice
 def legado(destino: Path, fuentes: dict[str, Path]) -> dict[str, Path]:
     soffice = shutil.which("soffice") or shutil.which("libreoffice")
+    if not soffice:                        # Windows: LibreOffice no suele estar en el PATH
+        candidata = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "LibreOffice/program/soffice.exe"
+        soffice = str(candidata) if candidata.is_file() else None
     if not soffice:
         print("[aviso] LibreOffice no disponible: no se generan .xls/.doc/.ppt", file=sys.stderr)
         return {}

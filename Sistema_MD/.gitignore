@@ -15,3 +15,5 @@ tortura/stress_test_suite/
 tortura/output_stress/
 tortura/conversion_stress.log
 tortura/validacion.json
+# Loop de evaluación: documentos reales del usuario y sus resultados; nunca al repositorio
+evaluacion/
