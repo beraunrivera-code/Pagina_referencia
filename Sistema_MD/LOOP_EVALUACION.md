@@ -158,6 +158,10 @@ Sin LibreOffice no se generan `.xls/.doc/.ppt`; sin ODA el DWG falso **debe** re
 
 ### Nivel 3 · Corpus real → **O3, O4, O5, O7**
 
+> **Atajo:** doble clic en `PROBAR_MIS_ARCHIVOS.bat` hace este nivel completo sobre
+> `evaluacion\corpus` y abre `evaluacion\RESUMEN.txt`. `esperado.json` es opcional: sin él se
+> espera convertir todos los archivos, pero no se comprueban frases concretas (regla F).
+
 ```powershell
 & $py tortura\ejecutar_tortura.py --suite evaluacion\corpus --salida "evaluacion\$ciclo\N3_salida"
 & $py tortura\validar_salidas_md.py --salida "evaluacion\$ciclo\N3_salida" --json "evaluacion\$ciclo\N3_validacion.json"
