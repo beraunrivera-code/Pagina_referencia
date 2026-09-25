@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "Sistema MD · prueba técnica en otra PC",
-  "created_utc": "2026-09-25T11:22:23.388633+00:00",
+  "created_utc": "2026-09-25T15:23:12.404110+00:00",
   "files": {
     ".dockerignore": "d2f03a93a7d5405f893e8e8442e94430fa7dd74eafd1dea84cfd69980840e1ee",
     ".gitignore": "6ab95e86bdfb74448d504f7b8152ab3ce6112888e269d9cc25a80d8c7c635911",
@@ -13,6 +13,7 @@
     "INICIO_RAPIDO.md": "742676ca349ad5ccb060fe9be86d2a1ef5185d12dc4f7b5cadbc8d2c86018bd9",
     "INVESTIGACION_MOTORES_LOCAL_API.md": "59866fb4139eff40b286344aa6b77801d8462c503fc6b46524a13ed6199c2099",
     "LEEME_PRIMERO.md": "ae530900959be628f0a80de63e9f430ed1b4ea10fb4684c655da54c864ff69d4",
+    "PENDIENTES_MEJORA.md": "94689bf0c1eaed02acb391d8460c00cca514e83184e71befaccdcb5e12ee4879",
     "PLAN_MAESTRO_IMPLEMENTACION.md": "ce3c45d420647b5da5f2d8bbd2ef837c02a40995953f191bd0d7da660f441f1a",
     "PLAN_MOTORES_LOCAL_API.json": "7d53e015a94bf522ba164d0bbd8fc49cbc69adbe9d67bb89b47dc07e62bdef13",
     "PROBAR_EQUIPO.py": "743e89fdadde774a0b8e117d7fd11446472d897cf012fd469840fb49101135f6",
