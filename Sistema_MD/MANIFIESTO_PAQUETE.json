@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "Sistema MD · prueba técnica en otra PC",
-  "created_utc": "2026-09-25T05:20:11.419729+00:00",
+  "created_utc": "2026-09-25T05:22:49.848437+00:00",
   "files": {
     ".dockerignore": "d2f03a93a7d5405f893e8e8442e94430fa7dd74eafd1dea84cfd69980840e1ee",
     ".gitignore": "6ab95e86bdfb74448d504f7b8152ab3ce6112888e269d9cc25a80d8c7c635911",
@@ -89,7 +89,7 @@
     "app/tests/test_providers.py": "c807297e230378cccd99b3ac97a339dda24640ccfc86ae96e212a91e96e2258d",
     "app/tests/test_publish_promotion.py": "574cb1352daaf554d1fcaadc6f4ec3f85c8e9f3cae431263aff4a3fa95de7c1a",
     "app/tests/test_robustez_formatos.py": "3e8854158c2ae0e175eec96922f20f82c4af22e2e8ea3f2a88a0e8250745681a",
-    "app/tests/test_runtime_paths.py": "17b958084d7e691b1d625be20e8d97d26aff77f928c6d73dbd84d0d4813bf920",
+    "app/tests/test_runtime_paths.py": "2787eebc26a8b76a03cb2f2bbcd1dd81604a17b4c2ffe3eac3f20e5c556d3c42",
     "app/tests/test_selector.py": "5ed3dff8fe6737d2806e409507b439621d7bebac3c05068f2531af8271a4ebdc",
     "app/tests/test_semantic_interface.py": "650fcc3c7e77042e25f272854a0a2b11f9b7a58ba37cdaa57e3cc6b12ba289da",
     "app/tests/test_semantic_judgments.py": "a5f351534761ff94740cedf13bae31a780da77c0a23eed966191a052f5243851",

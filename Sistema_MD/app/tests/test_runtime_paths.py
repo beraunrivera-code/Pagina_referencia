@@ -13,6 +13,13 @@ class RuntimePathTests(TestCase):
         self.root = Path(fixture.name)
         self.app = self.root / "app"
         self.app.mkdir()
+        # Aislado del equipo: el contenedor define SISTEMA_MD_DATA=/data y esa variable
+        # (correctamente) impide guardar otra carpeta de datos.
+        environment = patch.dict('os.environ')
+        environment.start()
+        self.addCleanup(environment.stop)
+        import os
+        os.environ.pop('SISTEMA_MD_DATA', None)
 
     def test_default_tracks_installation_without_writing_config(self):
         with patch.dict('os.environ', {}, clear=True):
