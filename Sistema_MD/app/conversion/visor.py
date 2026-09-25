@@ -33,12 +33,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import quote
 
-try:
+if os.name == "nt":
     import winreg
-except ImportError:                       # pruebas fuera de Windows
+else:                                     # Linux / contenedor: sin registro de Windows
     winreg = None
 
 from .documents import digest, load_json, read_stable
+from .platform_support import open_with_system
 from .storage import verify_artifacts
 
 VISOR_VERSION = 3
@@ -573,6 +574,9 @@ def open_in_browser(path, anchor=None):
     Medido 2026-09-14 en su PC: `.md` no tiene asociacion elegida y Antigravity la reclama;
     por eso el documento se abria como codigo fuente. Se resuelve el manejador de `https`
     (ChromeHTML) y se lanza el ejecutable directamente.
+
+    Fuera de Windows: xdg-open con escritorio; en modo headless (nube) no se lanza nada,
+    la vista ya quedo escrita dentro del paquete y se devuelve «headless».
     """
     destino = Path(path).resolve(strict=True)
     uri = destino.as_uri() + (("#" + quote(str(anchor), safe="")) if anchor else "")
@@ -591,8 +595,7 @@ def open_in_browser(path, anchor=None):
         subprocess.Popen([exe, uri], close_fds=True)
         return "navegador"
     except Exception:
-        os.startfile(uri)
-        return "asociacion"
+        return open_with_system(uri)
 
 
 _CSS = """

@@ -13,12 +13,12 @@ import zipfile
 from pathlib import Path
 
 from .documents import SCHEMA_VERSION, digest, json_bytes, parse_markdown, read_stable
-from .native import (KINDS as NATIVE_KINDS, ODA_EXE, como, docx_texto, dwg_md, excel_tres_capas,
-                     limpiar_temporales, pptx_texto, visio_md)
+from .native import (IMAGE_EXTENSIONS, IMAGE_KINDS, KINDS as NATIVE_KINDS, LEGACY_KINDS, ODA_EXE, como, docx_texto,
+                     dwg_md, excel_tres_capas, imagen_ocr, limpiar_temporales, pptx_texto, visio_md)
 from .storage import publish, prepared_cache
-from .local_io import scratch, check_archive, exclusive
+from .local_io import ConversionError, clean_control, md_text, scratch, check_archive, exclusive
 
-NATIVE_VERSION = 5
+NATIVE_VERSION = 7  # 7: Word por XML (anidadas, notas, OMML), CAD con bloques, legado vía LibreOffice, OCR
 
 # El render es local, pero las imágenes PNG y el texto se retienen hasta publish().
 # Tope del contenido acumulado (no promesa de máximo RSS del proceso).
@@ -34,9 +34,15 @@ def detect(path: Path) -> str:
                             (b"\xff\xd8\xff", "jpg"), (b"AC10", "dwg"),
                             (b"AutoCAD Binary DXF", "dxf"),
                             (b"\xd0\xcf\x11\xe0", "office-legacy"),
-                            (b"II*\0", "tif"), (b"MM\0*", "tif")]:
+                            (b"II*\0", "tif"), (b"MM\0*", "tif"),
+                            (b"GIF87a", "gif"), (b"GIF89a", "gif")]:
         if head.startswith(signature):
+            if kind == "office-legacy":
+                from .office_legacy import ole_subtype
+                return ole_subtype(path)          # xls / doc / ppt por sus streams, no por extensión
             return kind
+    if head[:4] == b"RIFF" and head[8:12] == b"WEBP":
+        return "webp"
     # DXF ASCII: grupo 0 + SECTION (tolera comentarios 999 iniciales). Sin esta firma un .dxf
     # caía en "text" y se habría publicado como prosa.
     if re.match(rb"(?:\s*999[^\r\n]*\r?\n[^\r\n]*\r?\n)*\s*0\s*\r?\n\s*SECTION\b", head):
@@ -45,6 +51,8 @@ def detect(path: Path) -> str:
         try:
             with zipfile.ZipFile(path) as archive:
                 names = archive.namelist()
+                if "xl/workbook.bin" in names:
+                    return "xlsb"                 # binario BIFF12: openpyxl no lo lee
                 kinds = [kind for prefix, kind in [("word/", "docx"), ("xl/", "xlsx"),
                                                     ("ppt/", "pptx"), ("visio/", "vsdx")]
                          if any(n.startswith(prefix) for n in names)]
@@ -212,25 +220,55 @@ def _convert_native(root: Path, source: Path) -> dict:
     cached = native_cache(root, original_hash, NATIVE_VERSION, source)
     if cached:
         return cached
-    if kind in {"docx", "xlsx", "pptx", "vsdx"}:
-        check_archive(source)
+    if kind in {"docx", "xlsx", "pptx", "vsdx", "xlsb"}:
+        try:
+            check_archive(source)
+        except zipfile.BadZipFile as error:
+            raise ConversionError(f"ZIP del documento dañado: {error}") from None
+    elif source.stat().st_size > 100_000_000:
+        raise ConversionError("Documento >100 MB: requiere un alcance especial, no se recorta")
     assets: dict[str, bytes] = {}
     producer_warnings: list[str] = []
     pending: list[str] = []
-    with scratch(root) as dest:
+    with scratch(root) as dest, scratch(root) as trabajo:
         try:
+            original_kind = kind
+            if kind in LEGACY_KINDS:
+                # FMT14: copia OOXML con LibreOffice; el motor nativo lee esa copia, no el original.
+                from .office_legacy import ENGINE_KIND, convert_copy
+                converted, version = convert_copy(source, kind, trabajo)
+                if ENGINE_KIND[kind] in {"docx", "xlsx", "pptx"}:
+                    check_archive(converted)
+                producer_warnings.append(
+                    f"{kind.upper()} convertido a {ENGINE_KIND[kind].upper()} con {version} sobre una copia: "
+                    "la conversión no es neutra (revisiones, objetos, macros y maquetación pueden diferir)")
+                kind = ENGINE_KIND[kind]
+                source_for_engine = str(converted)
+            else:
+                source_for_engine = str(source)
             # La extensión miente (medido: 113 de 13.646): las librerías validan por extensión. Los
             # motores de Office aplican como() por dentro y así conservan el nombre real en el MD;
             # solo CAD necesita la copia desde aquí, porque ODA filtra por *.DWG;*.DXF. El nativo no se toca.
-            ruta = como(str(source), kind) if kind in {"dwg", "dxf"} else str(source)
-            if kind == "docx":
+            ruta = como(str(source), kind) if kind in {"dwg", "dxf"} else source_for_engine
+            if kind in IMAGE_KINDS:
+                from . import ocr
+                body, pages, blank = imagen_ocr(ruta, dest)
+                body = f"# {md_text(source.name)}\n\n" + body
+                witness = None
+                provider = "pillow-tesseract-local" if ocr.engine() else "pillow-local"
+                scope = "%d página(s) de imagen; texto OCR candidato (%s), no verificado" % (pages, ocr.describe())
+                producer_warnings.append("Imagen: el texto OCR es un candidato; números, símbolos y tablas requieren cotejo visual")
+                if blank:
+                    pending.append("[PENDIENTE: %d página(s) de imagen sin texto OCR: %s.]"
+                                   % (len(blank), ", ".join(str(n) for n in blank)))
+            elif kind == "docx":
                 body, images = docx_texto(ruta, dest)
                 witness = body.strip().splitlines()[0][:90] if body.strip() else source.name
                 provider, scope = "python-docx-local", "párrafos por estilo, tablas y %d imágenes embebidas registradas; sin describir" % images
                 if images:
                     pending.append("[PENDIENTE: %d imágenes embebidas guardadas en imagenes/ del paquete, sin describir en esta fase.]" % images)
             elif kind == "xlsx":
-                body, formulas, images, structure = excel_tres_capas(ruta, dest)
+                body, formulas, images, structure = excel_tres_capas(ruta, dest, titulo=source.name)
                 lines = body.splitlines()
                 witness = lines[2][:90] if len(lines) > 2 else source.name
                 provider = "openpyxl-local"
@@ -262,7 +300,8 @@ def _convert_native(root: Path, source: Path) -> dict:
                 scope = "textos, bloques, capas y geometría medidos (%d entidades); el dibujo no se transcribe" % entities
                 producer_warnings.append("CAD: longitudes aproximadas; arcos, polilíneas y bloques anidados requieren validación antes de metrados")
             if kind == "docx":
-                producer_warnings.append("Word: cuerpo principal; encabezados, pies, revisiones, tablas anidadas y geometría de celdas combinadas requieren revisión")
+                producer_warnings.append("Word: notas, tablas anidadas, OMML, encabezados y pies se publican marcados; "
+                                         "revisiones, cuadros de texto flotantes y geometría de celdas combinadas requieren revisión")
             if kind == "xlsx":
                 producer_warnings.append("Excel: valores cacheados sin recalcular; estilos, combinaciones, gráficos y macros no equivalen a transcripción visual")
             for name in sorted(os.listdir(dest)):
@@ -270,8 +309,18 @@ def _convert_native(root: Path, source: Path) -> dict:
                 if path.is_file():
                     safe = re.sub(r"[^A-Za-z0-9._-]", "_", name)
                     extension = Path(safe).suffix.lower()
-                    folder = "imagenes" if extension in {".png", ".jpg", ".jpeg", ".gif", ".emf"} else "derivados"
+                    folder = "imagenes" if extension in IMAGE_EXTENSIONS else "derivados"
                     assets[f"{folder}/{safe}"] = path.read_bytes()
+        except ValueError:
+            raise                                  # rechazo ya explicado (ConversionError y validaciones)
+        except Exception as error:
+            # Ninguna excepción cruda de una librería de formato llega al usuario: se explica
+            # qué motor falló y con qué archivo; no se publica un paquete parcial.
+            motor = {"docx": "Word (python-docx)", "xlsx": "Excel (openpyxl)", "pptx": "PowerPoint (python-pptx)",
+                     "vsdx": "Visio (XML)", "dwg": "CAD (ODA/ezdxf)", "dxf": "CAD (ezdxf)"}.get(kind, f"«{kind}»")
+            detail = " ".join(str(error).split())[:200] or "sin detalle"
+            raise ConversionError(f"El motor {motor} no pudo leer «{source.name}»: {type(error).__name__}: {detail}. "
+                                  "Archivo dañado o variante no soportada; no se publicó nada.") from error
         finally:
             limpiar_temporales()
     if file_hash(source) != original_hash:
@@ -286,6 +335,7 @@ def _convert_native(root: Path, source: Path) -> dict:
     if assets:
         text += "\n\n## Recursos conservados\n\n" + "\n".join(f"- [{name}](<{name}>)" for name in assets)
     doc = {"schema_version": SCHEMA_VERSION, "title": source.stem, "input_kind": kind,
+           **({"source_kind": original_kind} if original_kind != kind else {}),
            "native_version": NATIVE_VERSION,
            "source_path": str(source), "source_sha256": original_hash, "expected_units": [1],
            "provider": provider, "scope": scope,
@@ -298,6 +348,48 @@ def _convert_native(root: Path, source: Path) -> dict:
     if producer_warnings:
         doc["producer_warnings"] = producer_warnings
     return publish(root, doc, assets)
+
+
+# Formatos reconocidos que no tienen motor: causa legible en vez de «adaptador pendiente».
+REJECTION_REASONS = {
+    "empty": "Archivo vacío (0 bytes): no hay contenido que convertir.",
+    "zip-damaged": "ZIP dañado o truncado: el contenedor Office/ZIP no se puede abrir; recupera una copia íntegra.",
+    "zip": "ZIP genérico: no es un documento Office; descomprímelo y convierte cada archivo.",
+    "zip-ambiguous": "ZIP con partes de varios formatos Office a la vez: requiere revisión manual.",
+    "office-legacy": "Office binario (OLE) que no es Word, Excel ni PowerPoint (p. ej. Outlook .msg o Visio .vsd).",
+    "unsupported": "Formato binario no reconocido: no se adivina su contenido.",
+}
+
+
+def convert_any(root: Path, source: Path, pages: list[int] | None = None) -> dict:
+    """Punto de entrada único: detecta por contenido y elige la ruta local; nunca llama a IA.
+
+    Publica un paquete o lanza ``ConversionError`` (ValueError) con la causa. Un PDF sin
+    alcance explícito se prepara completo (tope de 2.000 páginas y del límite de memoria).
+    """
+    source = Path(source).resolve(strict=True)
+    if not source.is_file():
+        raise ConversionError("La ruta no es un archivo")
+    kind = detect(source)
+    if kind in {"md", "txt", "text"}:
+        return convert_text(root, source)
+    if kind in NATIVE_KINDS:
+        return convert_native(root, source)
+    if kind == "pdf":
+        if pages is None:
+            import fitz
+            try:
+                with fitz.open(source) as document:
+                    total = len(document)
+            except (fitz.FileDataError, RuntimeError, ValueError) as error:
+                raise ConversionError(f"PDF dañado o ilegible: {error}") from None
+            if not total:
+                raise ConversionError("PDF sin páginas")
+            if total > 2000:
+                raise ConversionError(f"PDF de {total} páginas: prepáralo por tramos con «preparar-pdf --paginas»")
+            pages = list(range(1, total + 1))
+        return prepare_pdf(root, source, pages)
+    raise ConversionError(REJECTION_REASONS.get(kind, f"Formato «{kind}» sin adaptador local."))
 
 
 def prepare_pdf(root: Path, source: Path, pages: list[int], dpi: int = 150) -> dict:
@@ -316,9 +408,14 @@ def prepare_pdf(root: Path, source: Path, pages: list[int], dpi: int = 150) -> d
     if cached:
         return cached
     import fitz
+    from . import ocr
     units, assets, avisos = [], {}, []
     prepared_bytes = 0
-    with fitz.open(source) as pdf:
+    try:
+        pdf = fitz.open(source)
+    except (fitz.FileDataError, RuntimeError, ValueError) as error:
+        raise ConversionError(f"PDF dañado o ilegible: {error}") from None
+    with pdf:
         if pdf.needs_pass:
             raise ValueError("PDF protegido: requiere acceso explícito")
         if any(n < 1 or n > len(pdf) for n in pages):
@@ -349,8 +446,18 @@ def prepare_pdf(root: Path, source: Path, pages: list[int], dpi: int = 150) -> d
                     "Selecciona menos páginas y prepara lotes separados o reduce los dpi. "
                     "No se publicó un paquete parcial.")
             assets[name] = content
-            blocks = [{"id": f"p{n}-b1", "kind": "paragraph",
-                       "text": text if text.strip() else "[PENDIENTE: lectura visual/OCR.]\n"}]
+            ocr_text = None
+            if not text.strip():
+                # Página sin capa de texto (escaneada): OCR local a 300 dpi como CANDIDATO marcado.
+                ocr_text = ocr.ocr_png(page.get_pixmap(dpi=300, alpha=False).tobytes("png")) if ocr.engine() else None
+            if text.strip():
+                block_text = md_text(text)
+            elif ocr_text:
+                block_text = f"*Texto OCR candidato ({ocr.describe()}) — página sin capa de texto; sin verificar:*\n\n{md_text(ocr_text)}\n"
+                avisos.append(f"Unidad {n}: sin texto embebido; se publicó OCR candidato ({ocr.describe()}).")
+            else:
+                block_text = "[PENDIENTE: lectura visual/OCR.]\n"
+            blocks = [{"id": f"p{n}-b1", "kind": "paragraph", "text": block_text}]
             # Umbral CALIBRADO contra un PDF real de 48 páginas, con control conocido
             # (láminas 1/15/19/20 frente a prosa 2/3/44/45/46). "3 elementos y <1200
             # caracteres" marcaba 44 de 48 páginas, incluida prosa corrida: un aviso que
@@ -362,6 +469,7 @@ def prepare_pdf(root: Path, source: Path, pages: list[int], dpi: int = 150) -> d
                     f"{imagenes} imágenes, {len(text.strip())} caracteres de texto). El texto "
                     "embebido son etiquetas sueltas; su relación requiere lectura visual.")
             units.append({"number": n, "blocks": blocks, "image_asset": name,
+                          **({"ocr_engine": ocr.describe()} if ocr_text else {}),
                           "image_sha256": digest(content), "embedded_characters": len(text),
                           "images": imagenes, "drawings": dibujos,
                           "annotations": sum(1 for _ in (page.annots() or []))})

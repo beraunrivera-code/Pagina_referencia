@@ -25,8 +25,6 @@ class NavigationTests(TestCase):
     def test_login_uses_official_cli_without_prompt_or_shell(self):
         fixture = workspace_temp()
         self.addCleanup(fixture.cleanup)
-        if os.name != 'nt':
-            self.skipTest('Acceso de Windows')
         with patch('conversion.access.cli_binary', return_value=['C:/Program Files/agy.exe']), patch('conversion.access.subprocess.Popen', return_value=SimpleNamespace(pid=42)) as launch:
             result = launch_login(Path(fixture.name), 'antigravity-cli')
         self.assertFalse(result['prompt_sent'])
@@ -39,8 +37,6 @@ class NavigationTests(TestCase):
     def test_named_login_profile_is_isolated_outside_project(self):
         fixture = workspace_temp()
         self.addCleanup(fixture.cleanup)
-        if os.name != 'nt':
-            self.skipTest('Acceso de Windows')
         base = Path(fixture.name)
         local = base / 'local-app-data'
         environment = {'LOCALAPPDATA': str(local), 'PATH': 'fixture',

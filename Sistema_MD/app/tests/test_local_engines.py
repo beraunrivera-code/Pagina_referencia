@@ -149,7 +149,9 @@ class LocalEngineTests(TestCase):
         with patch.dict(os.environ, {"SISTEMA_MD_MARKITDOWN_PYTHON": str(self.folder / "missing/python.exe")}):
             with self.assertRaises(le.LocalEngineError):
                 le.engine_python("markitdown")
-            self.assertEqual(le.engine_python("markitdown", sys.executable), Path(sys.executable).resolve())
+            # POSIX conserva el enlace de la venv (resolverlo saldría de ella); Windows resuelve.
+        expected = Path(sys.executable).resolve() if os.name == "nt" else Path(os.path.abspath(sys.executable))
+        self.assertEqual(le.engine_python("markitdown", sys.executable), expected)
 
     def test_invalid_configuration_and_relative_escape_are_rejected(self):
         self.config.write_bytes(json_bytes({"version": 1, "engines": {"markitdown": {"api_key": "synthetic"}}}))

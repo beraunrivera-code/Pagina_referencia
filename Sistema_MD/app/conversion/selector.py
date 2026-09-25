@@ -101,7 +101,8 @@ def choose_and_process(root: Path, limit: int = 200) -> dict:
             chosen = filedialog.askopenfilename(
                 title="Selecciona el archivo de entrada",
                 filetypes=[
-                    ("Documentos", "*.pdf *.docx *.xlsx *.xlsm *.pptx *.vsdx *.txt *.md *.html *.dwg *.dxf"),
+                    ("Documentos", "*.pdf *.docx *.doc *.xlsx *.xlsm *.xlsb *.xls *.pptx *.ppt *.vsdx *.txt *.md *.html *.dwg *.dxf"),
+                    ("Imágenes (OCR)", "*.png *.jpg *.jpeg *.tif *.tiff *.gif *.webp"),
                     ("Todos los archivos", "*.*"),
                 ],
                 parent=window,

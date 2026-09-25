@@ -1,0 +1,15 @@
+.git
+**/__pycache__
+**/*.pyc
+.venv
+.venv-local
+workers/markitdown/.venv
+workers/*/preparacion*.json
+app/tests/_runs
+logs
+datos
+MD
+sistema_md.json
+tortura/stress_test_suite
+tortura/output_stress
+tortura/*.log

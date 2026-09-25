@@ -13,7 +13,8 @@ from .storage import connect, output_folder, verify_artifacts
 from .workflow import WorkQueue
 from .diagnostics import record_failure
 
-LOCAL = {"docx", "xlsx", "pptx", "vsdx", "txt", "md", "text"}
+# Legado vía LibreOffice e imágenes vía OCR también son locales; CAD y PDF siguen aparte.
+LOCAL = {"docx", "xlsx", "pptx", "vsdx", "txt", "md", "text", "xls", "xlsb", "doc", "ppt", "png", "jpg", "tif", "gif", "webp"}
 
 
 def database(root):
@@ -44,7 +45,7 @@ def plan_queue(root):
         kind, checksum = row["format"], row["sha256"]
         if kind not in LOCAL or not checksum:
             row.update(route="pendiente", reason={"pdf": "Elegir páginas/valor; no se envía a IA",
-                "office-legacy": "Office antiguo: adaptador pendiente", "dwg": "CAD: procesar individualmente con revisión de geometría",
+                "office-legacy": "OLE que no es Word/Excel/PowerPoint: sin adaptador", "dwg": "CAD: procesar individualmente con revisión de geometría",
                 "dxf": "CAD: procesar individualmente con revisión de geometría", "deferred": "Descargar localmente primero",
                 "zip-damaged": "ZIP dañado: revisar fuente"}.get(kind, "Formato fuera del lote local; no se elimina"))
         elif checksum in seen:

@@ -202,6 +202,10 @@ def main(arguments: list[str] | None = None) -> int:
                 code = cli_main(["encolar", value])
                 if code:
                     return code
+            if os.name != "nt" and not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY")):
+                # Linux headless (nube): quedan en la cola; no hay escritorio donde abrir la interfaz.
+                print("Archivos encolados. Modo headless: procésalos con «planificar-lote» y «procesar-lote».")
+                return 0
             gui = True
         if gui:
             from conversion.app import ConversionApp

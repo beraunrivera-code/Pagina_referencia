@@ -1,0 +1,353 @@
+{
+  "errores": 0,
+  "avisos": 24,
+  "errores_por_regla": {},
+  "paquetes": [
+    {
+      "paquete": "corrupto_basura_pdf",
+      "estado": "rechazo_controlado",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "corrupto_dxf_truncado_dxf",
+      "estado": "rechazo_controlado",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "corrupto_png_truncado_png",
+      "estado": "rechazo_controlado",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "corrupto_vacio_docx",
+      "estado": "rechazo_controlado",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "corrupto_xml_roto_docx",
+      "estado": "rechazo_controlado",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "corrupto_zip_truncado_xlsx",
+      "estado": "rechazo_controlado",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "mentira_excel_llamado_pptx",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 2,
+      "tablas": 15,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_cad_dxf",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 4,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_cad_falso_dwg",
+      "estado": "rechazo_controlado",
+      "esperado": "rechazo_controlado",
+      "markdown": 0,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_excel_xls",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 2,
+      "tablas": 13,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_excel_xlsb",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 2,
+      "tablas": 4,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_excel_xlsm",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 2,
+      "tablas": 15,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_excel_xlsx",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 2,
+      "tablas": 15,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_imagen_en_blanco_png",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_ocr_jpg",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_ocr_png",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_ocr_tiff",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_pdf_pdf",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 0,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_powerpoint_ppt",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 1,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_powerpoint_pptx",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 1,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_word_doc",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 3,
+      "errores": 0
+    },
+    {
+      "paquete": "stress_word_docx",
+      "estado": "ok",
+      "esperado": "convertir",
+      "markdown": 1,
+      "tablas": 4,
+      "errores": 0
+    }
+  ],
+  "hallazgos": [
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "mentira_excel_llamado_pptx/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "mentira_excel_llamado_pptx/documento.md",
+      "linea": 29,
+      "detalle": "sección vacía: 'Hojas principales'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "mentira_excel_llamado_pptx/documento.md",
+      "linea": 170,
+      "detalle": "sección vacía: 'Hojas auxiliares'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_cad_dxf/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xls/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xls/documento.md",
+      "linea": 29,
+      "detalle": "sección vacía: 'Hojas principales'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xls/documento.md",
+      "linea": 134,
+      "detalle": "sección vacía: 'Hojas auxiliares'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsb/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsb/documento.md",
+      "linea": 29,
+      "detalle": "sección vacía: 'Hojas principales'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsb/documento.md",
+      "linea": 46,
+      "detalle": "sección vacía: 'Hojas auxiliares'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsm/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsm/documento.md",
+      "linea": 29,
+      "detalle": "sección vacía: 'Hojas principales'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsm/documento.md",
+      "linea": 170,
+      "detalle": "sección vacía: 'Hojas auxiliares'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsx/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsx/documento.md",
+      "linea": 29,
+      "detalle": "sección vacía: 'Hojas principales'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_excel_xlsx/documento.md",
+      "linea": 170,
+      "detalle": "sección vacía: 'Hojas auxiliares'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_imagen_en_blanco_png/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_ocr_jpg/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_ocr_png/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_ocr_tiff/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_powerpoint_ppt/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_powerpoint_pptx/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_word_doc/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    },
+    {
+      "nivel": "AVISO",
+      "regla": "E3",
+      "archivo": "stress_word_docx/documento.md",
+      "linea": 17,
+      "detalle": "sección vacía: 'Página/unidad 1'"
+    }
+  ]
+}

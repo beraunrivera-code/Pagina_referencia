@@ -46,6 +46,8 @@ class FabBridgeTests(TestCase):
 
     def fixtures(self):
         stack = ExitStack()
+        # Primitivas nativas de Windows simuladas: la orquestación se prueba en cualquier SO.
+        stack.enter_context(patch.object(bridge, "_require_windows"))
         stack.enter_context(patch.object(bridge, "_locked_path", side_effect=lambda *a, **kw: nullcontext()))
         stack.enter_context(patch.object(bridge, "verified_binary", return_value=(self.binary, self.binary_hash)))
         stack.enter_context(patch.object(bridge, "_secure_folder", return_value=self.acl))
@@ -147,7 +149,8 @@ class FabBridgeTests(TestCase):
 
     def test_runas_uses_shell_false_no_document_argv_and_no_api_environment(self):
         stage = self.base / ("a" * 32)
-        with (patch.object(bridge.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as run,
+        with (patch.object(bridge, "_require_windows"),
+              patch.object(bridge.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as run,
               patch.dict(bridge.os.environ, {"ANTHROPIC_API_KEY": "fixture-secret", "CUSTOM_SECRET": "fixture-secret"})):
             bridge._launch(stage, "fab3")
         args, options = run.call_args.args[0], run.call_args.kwargs
@@ -202,3 +205,26 @@ class FabBridgeTests(TestCase):
         with self.assertRaises(bridge.FabBridgeFault) as failure:
             bridge._bounded(path, 3)
         self.assertEqual(failure.exception.code, "response_size")
+
+    def test_non_windows_fails_closed_before_any_io(self):
+        with patch.object(bridge.os, "name", "posix"), patch.object(bridge.subprocess, "run") as run, \
+                patch.object(bridge, "_launch") as launch:
+            with self.assertRaises(bridge.FabBridgeFault) as failure:
+                self.run_bridge()
+        self.assertEqual(failure.exception.code, "fab_windows")
+        run.assert_not_called()
+        launch.assert_not_called()
+        self.assertFalse(self.base.exists())
+        self.assertFalse((self.folder / "fab-bridge.json").exists())
+
+    def test_non_windows_never_executes_powershell_or_runas(self):
+        # Sin powershell.exe/runas.exe no hay FileNotFoundError: falla cerrado y explícito.
+        stage = self.base / ("d" * 32)
+        with patch.object(bridge.os, "name", "posix"), patch.object(bridge.subprocess, "run") as run:
+            for call in (lambda: bridge._powershell("Get-Date"),
+                         lambda: bridge._launch(stage, "fab1"),
+                         lambda: bridge.verified_binary(self.binary, self.binary_hash)):
+                with self.assertRaises(bridge.FabBridgeFault) as failure:
+                    call()
+                self.assertEqual(failure.exception.code, "fab_windows")
+        run.assert_not_called()

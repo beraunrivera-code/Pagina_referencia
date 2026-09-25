@@ -25,6 +25,7 @@ from .access import launch_login, OFFICIAL_HELP
 from .batches import plan_queue, run_batch, batch_status
 from .ai_batches import plan_ai_batch, run_ai_batch, ai_batch_status
 from .visor import write_view, open_in_browser, render_markdown
+from .platform_support import open_with_chooser, open_with_system, reveal_in_folder
 
 
 APP_ROOT = Path(__file__).resolve().parents[1]
@@ -494,7 +495,12 @@ class ConversionApp(tk.Tk):
         self.result_tree.bind("<Control-a>", self._select_all_results)
         self.result_tree.bind("<Control-A>", self._select_all_results)
         self.result_tree.bind("<Button-3>", self._results_context_menu)
-        self.result_tree.bind("<App>", self._results_context_menu)
+        # La tecla de menú se llama «App» en Windows y «Menu» en X11; Tk rechaza el keysym ajeno.
+        for keysym in ("<App>", "<Menu>"):
+            try:
+                self.result_tree.bind(keysym, self._results_context_menu)
+            except tk.TclError:
+                pass
         self.result_tree.bind("<Shift-F10>", self._results_context_menu)
         menu = tk.Menu(self, tearoff=False)
         menu.add_command(label="Abrir", font=("Segoe UI", 9, "bold"), command=self.open_selected_result)
@@ -1236,7 +1242,8 @@ class ConversionApp(tk.Tk):
 
         def choose_python():
             path = filedialog.askopenfilename(parent=dialog, title="Python del entorno del motor",
-                                             filetypes=(("Ejecutable Python", "python*.exe"), ("Todos", "*")))
+                                             filetypes=(("Ejecutable Python", "python*.exe" if os.name == "nt" else "python*"),
+                                                        ("Todos", "*")))
             if path:
                 python_var.set(path)
 
@@ -1293,6 +1300,10 @@ class ConversionApp(tk.Tk):
         ttk.Button(buttons, text="Guardar rutas", command=save).pack(side="right", padx=8)
         ttk.Button(buttons, text="Comprobar motores", command=self.show_local_engines).pack(side="left")
         dialog.bind("<Escape>", lambda _event: dialog.destroy())
+        # 640x420 es el suelo medido con Segoe UI; con otras fuentes/DPI (DejaVu en Linux)
+        # el contenido pide más y un mínimo fijo aplastaba la línea de estado.
+        dialog.update_idletasks()
+        dialog.minsize(max(640, dialog.winfo_reqwidth()), max(420, dialog.winfo_reqheight()))
         return dialog
 
     def show_local_engines(self):
@@ -1730,26 +1741,25 @@ class ConversionApp(tk.Tk):
         return self._export_md(folder) or md
 
     def reveal_selected_result(self) -> None:
-        """Abre el Explorador con el documento.md ya seleccionado."""
+        """Abre el Explorador (o el gestor de archivos) con el documento.md a la vista."""
         md = self._single_result_md()
         if md is None:
             return
-        import subprocess
-        subprocess.Popen('explorer /select,"%s"' % md)      # la coma va pegada a la ruta
-        self.status_var.set(f"Mostrado en carpeta · {md}")
+        via = reveal_in_folder(md)
+        self.status_var.set(f"Mostrado en carpeta ({via}) · {md}")
 
     def open_with_selected_result(self) -> None:
         """Diálogo «Abrir con» de Windows sobre el documento.md: él elige con qué programa.
 
         ``os.startfile`` respeta la asociación de la PC, y aquí ``.md`` cae en un editor de
         código. Se lanza en proceso aparte para no congelar la ventana mientras elige.
+        En Linux no existe un diálogo universal: se usa la asociación del escritorio.
         """
         md = self._single_result_md()
         if md is None:
             return
-        import subprocess
-        subprocess.Popen(["rundll32.exe", "shell32.dll,OpenAs_RunDLL", str(md)])
-        self.status_var.set(f"Abrir con… · {md.name}")
+        via = open_with_chooser(md)
+        self.status_var.set(f"Abrir con… ({via}) · {md.name}")
 
     def copy_selected_result_path(self) -> None:
         md = self._single_result_md()
@@ -1929,7 +1939,7 @@ class ConversionApp(tk.Tk):
     def _open_path(self, path: Path) -> None:
         try:
             path = path.resolve(strict=True)
-            os.startfile(path)  # Windows: usa la aplicación asociada por el usuario.
+            open_with_system(path)  # Aplicación asociada por el usuario; headless solo registra.
         except Exception as exc:
             failure = record_failure(DATA_ROOT, "abrir_ruta", exc, {"path": str(path)})
             self.refresh_failures()

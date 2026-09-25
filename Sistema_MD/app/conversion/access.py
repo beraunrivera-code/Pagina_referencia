@@ -20,14 +20,19 @@ OFFICIAL_HELP = {
 def launch_login(root: Path, provider: str, profile="principal"):
     if provider not in {"gemini-cli", "antigravity-cli", "codex-cli", "claude-cli"}:
         raise ValueError("El acceso interactivo corresponde a un CLI, no a una clave API")
-    if os.name != "nt":
-        raise ValueError("El botón de acceso interactivo está implementado para Windows")
+    windows = os.name == "nt"
+    if not windows and provider == "antigravity-cli" and str(profile).startswith("fab"):
+        raise ValueError("Los perfiles fab son identidades Windows (runas); en Linux usa un perfil propio del CLI")
     command = cli_binary(provider)
     if profile not in profiles_for(provider):
         raise ValueError("Perfil CLI inválido")
     folder = root.resolve() / "acceso_cli" / provider / profile
     folder.mkdir(parents=True, exist_ok=True)
-    options = {"cwd": folder, "shell": False, "creationflags": subprocess.CREATE_NEW_CONSOLE}
+    options = {"cwd": folder, "shell": False}
+    if windows:
+        options["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+    # POSIX: hereda la terminal desde la que se lanzó Sistema MD (entrypoint.sh); ahí el CLI
+    # oficial muestra su enlace o código de acceso. No se abre ningún emulador de terminal.
     if provider == "antigravity-cli" and profile.startswith("fab"):
         # La identidad Windows conserva el keyring. No exportar tokens ni simular HOME.
         from .fab_bridge import verified_binary
@@ -49,4 +54,6 @@ def launch_login(root: Path, provider: str, profile="principal"):
     process = subprocess.Popen(command, **options)
     return {"pid": process.pid, "provider": provider, "prompt_sent": False,
             "profile": profile,
-            "notice": "Completa el acceso en la ventana oficial y ciérrala. Abrir no confirma autenticación."}
+            "notice": ("Completa el acceso en la ventana oficial y ciérrala." if windows else
+                       "Completa el acceso en la terminal desde la que se inició Sistema MD.")
+                      + " Abrir no confirma autenticación."}

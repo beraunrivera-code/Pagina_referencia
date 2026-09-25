@@ -103,7 +103,7 @@ class CredentialTests(TestCase):
         with patch.dict('os.environ', {'OPENAI_API_KEY': 'wrong-account'}, clear=True), \
                 patch('conversion.credentials.os.name', 'nt'), \
                 patch('conversion.credentials._library', return_value=library), \
-                patch('conversion.credentials.ctypes.get_last_error', return_value=1168):
+                patch('conversion.credentials._last_error', return_value=1168):
             self.assertIsNone(get_key('openai-api', 5))
         self.assertEqual(library.CredReadW.call_args.args[:3], ('SistemaMD/openai-api/5', 1, 0))
 
@@ -138,11 +138,11 @@ class CredentialTests(TestCase):
         library.CredDeleteW.return_value = False
         with patch('conversion.credentials.os.name', 'nt'), \
                 patch('conversion.credentials._library', return_value=library), \
-                patch('conversion.credentials.ctypes.get_last_error', return_value=1168):
+                patch('conversion.credentials._last_error', return_value=1168):
             self.assertFalse(delete_key('deepseek-api', 2))
         with patch('conversion.credentials.os.name', 'nt'), \
                 patch('conversion.credentials._library', return_value=library), \
-                patch('conversion.credentials.ctypes.get_last_error', return_value=5):
+                patch('conversion.credentials._last_error', return_value=5):
             with self.assertRaises(OSError):
                 delete_key('deepseek-api', 2)
 

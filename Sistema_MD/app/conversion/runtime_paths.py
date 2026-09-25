@@ -102,7 +102,15 @@ def configure_export_root(app_root, root, path):
     return config
 
 
+# Ubicaciones del paquete oficial ODA File Converter en Linux (.deb/.rpm y extracción manual).
+ODA_LINUX_PATHS = ("/usr/bin/ODAFileConverter", "/opt/ODAFileConverter/ODAFileConverter",
+                   "/usr/local/bin/ODAFileConverter")
+ODA_LINUX_GLOBS = (("/usr/bin", "ODAFileConverter_*/ODAFileConverter"),
+                   ("/opt", "ODAFileConverter*/ODAFileConverter"))
+
+
 def find_oda():
+    """Ejecutable de ODA: SISTEMA_MD_ODA, PATH y las rutas estándar de cada sistema."""
     explicit = os.environ.get("SISTEMA_MD_ODA")
     if explicit:
         return str(Path(explicit).expanduser().resolve())
@@ -115,4 +123,12 @@ def find_oda():
             candidates = sorted((Path(program_files) / "ODA").glob("ODAFileConverter*/ODAFileConverter.exe"))
             if candidates:
                 return str(candidates[-1])
+        return ""
+    for candidate in ODA_LINUX_PATHS:
+        if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+    for base, pattern in ODA_LINUX_GLOBS:
+        candidates = sorted(path for path in Path(base).glob(pattern) if os.access(path, os.X_OK))
+        if candidates:
+            return str(candidates[-1])
     return ""
