@@ -1,0 +1,9 @@
+# Mismos bytes en cualquier sistema: el texto se extrae siempre con LF, también en un clon de
+# Windows (core.autocrlf=true lo convertiría a CRLF). Así «#!/usr/bin/env bash» funciona en el
+# contenedor y los SHA-256 de Sistema_MD/MANIFIESTO_PAQUETE.json coinciden en cualquier equipo.
+* text=auto eol=lf
+# Lanzadores de Windows: se conservan byte a byte tal como están en el repositorio.
+*.bat -text
+# Documentos cuyo hash de origen consta en document_transforms del manifiesto: sin conversión.
+Sistema_MD/PLAN_MAESTRO_IMPLEMENTACION.md -text
+Sistema_MD/PLAN_MOTORES_LOCAL_API.json -text

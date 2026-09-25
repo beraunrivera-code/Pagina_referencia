@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "package": "Sistema MD · prueba técnica en otra PC",
-  "created_utc": "2026-09-25T05:22:49.848437+00:00",
+  "created_utc": "2026-09-25T11:22:23.388633+00:00",
   "files": {
     ".dockerignore": "d2f03a93a7d5405f893e8e8442e94430fa7dd74eafd1dea84cfd69980840e1ee",
     ".gitignore": "6ab95e86bdfb74448d504f7b8152ab3ce6112888e269d9cc25a80d8c7c635911",
     "ADN_FORMATOS_EXTRACCION.md": "72d6463f8553d65bbcd5accd5b83f542047880e593f981d3617a9ade54f93be3",
-    "DESPLIEGUE_LINUX.md": "f8ea19b9d717e1be53ecba4c4f398d33019af6ee5dd317ec9d5c033971e9ec20",
-    "Dockerfile": "8f2a97815317ecd3f8816f5390149a1fe5d99d2ae6f4ef8685115c1c36d90f5d",
+    "DESPLIEGUE_LINUX.md": "014af8a528ff9fec14cf47dc12babbffbff5f6aef24f30b0f5594d4297b63ff7",
+    "Dockerfile": "5df899dbe7ef1fd44d8ff4e74e14b4be06036484dd62a4997e2e3e964c7a32a3",
     "ESTADO_IMPLEMENTACION.md": "c3f41e84ecd96b11c01aa4c5b70a1e3db3ae6f6e5f1d6af713bab83a5df148b6",
     "GUIA_PRUEBA_OTRA_PC.md": "401eec8fbdada6579393b6cf1e4cfec6f6947895b96eef5e715ce18fa894d767",
     "INICIO_RAPIDO.md": "742676ca349ad5ccb060fe9be86d2a1ef5185d12dc4f7b5cadbc8d2c86018bd9",
