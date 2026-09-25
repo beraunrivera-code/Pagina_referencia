@@ -16,6 +16,33 @@ docker run --rm sistema-md --check                             # control de arra
 - Args: `WITH_MARKITDOWN`, `WITH_LIBREOFFICE` (XLS/DOC/PPT/XLSB), `WITH_OCR` (Tesseract); todos a 1.
 - DWG: deja el `.deb` oficial de ODA File Converter en `vendor/` antes de construir.
 
+## Windows con Docker Desktop (PowerShell)
+
+1. Instala y **abre Docker Desktop** (motor Linux/WSL 2). Espera a «Engine running».
+   Sin esto aparece `failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine`.
+2. Descarga el repositorio y entra en la carpeta del proyecto:
+
+```powershell
+cd $HOME
+git clone https://github.com/beraunrivera-code/Pagina_referencia.git
+cd Pagina_referencia\Sistema_MD
+docker build -t sistema-md .
+docker run --rm sistema-md --check
+```
+
+   Sin Git: descarga el ZIP desde GitHub («Code → Download ZIP»), extráelo y entra en
+   `Pagina_referencia-main\Sistema_MD`.
+3. Convierte: crea `datos\entrada`, copia ahí tu archivo y ejecuta (las comillas protegen rutas
+   con espacios, como `C:\Users\NOMBRE APELLIDO`):
+
+```powershell
+New-Item -ItemType Directory -Force datos\entrada | Out-Null
+Copy-Item "C:\ruta\a\tu\libro.xlsx" datos\entrada\
+docker run --rm -v "${PWD}\datos:/data" sistema-md convertir /data/entrada/libro.xlsx
+```
+
+   El paquete convertido queda en `datos\documentos\`.
+
 ## Linux nativo
 
 ```bash

@@ -51,6 +51,8 @@ RUN userdel --remove ubuntu 2>/dev/null || true \
 
 WORKDIR /opt/sistema_md
 COPY --chown=sistemamd:sistemamd . .
+# Contexto construido desde Windows: el script puede llegar con CRLF y sin bit de ejecución.
+RUN sed -i 's/\r$//' entrypoint.sh && chmod 0755 entrypoint.sh
 USER sistemamd
 
 # Preparador propio del proyecto: crea .venv-local, instala requirements-local.txt y
