@@ -90,6 +90,34 @@ def _copiar_paquete(origen: Path, destino: Path) -> dict:
             "proveedor": documento.get("provider"), "tipo_entrada": documento.get("input_kind")}
 
 
+FAMILIAS = {".xlsx": "excel", ".xlsm": "excel", ".xls": "excel", ".xlsb": "excel", ".docx": "word",
+            ".doc": "word", ".pptx": "powerpoint", ".ppt": "powerpoint", ".pdf": "pdf", ".dwg": "cad",
+            ".dxf": "cad", ".png": "imagen", ".jpg": "imagen", ".jpeg": "imagen", ".tif": "imagen",
+            ".tiff": "imagen", ".gif": "imagen", ".webp": "imagen", ".vsdx": "visio", ".txt": "texto", ".md": "texto"}
+
+
+def cargar_esperado(suite: Path) -> dict:
+    """esperado.json si existe; si no, cada archivo de la carpeta se espera «convertir».
+
+    Sin esperado.json no hay marcadores «debe_contener» (regla F): se detectan caídas,
+    rechazos y Markdown roto, pero no si falta una frase concreta del original.
+    """
+    ruta = suite / "esperado.json"
+    if ruta.is_file():
+        return json.loads(ruta.read_text(encoding="utf-8-sig"))
+    automatico = {}
+    for archivo in sorted(suite.iterdir()):
+        # Ocultos, temporales de Office (~$libro.xlsx) y accesos directos no son documentos.
+        if not archivo.is_file() or archivo.name.startswith((".", "~$")) or archivo.suffix.lower() in {".lnk", ".ini"}:
+            continue
+        automatico[archivo.name] = {"familia": FAMILIAS.get(archivo.suffix.lower(), "otro"), "esperado": "convertir",
+                                    "debe_contener": []}
+    if not automatico:
+        raise SystemExit(f"No hay archivos que probar en {suite}")
+    print(f"[aviso] Sin esperado.json: {len(automatico)} archivos, se espera convertir todos (sin marcadores).")
+    return automatico
+
+
 def _esperar(proceso) -> tuple[int | str, float | None]:
     """(código de salida o «timeout», pico de memoria en MB).
 
@@ -117,7 +145,7 @@ def _esperar(proceso) -> tuple[int | str, float | None]:
 
 
 def ejecutar(suite: Path, salida: Path) -> list[dict]:
-    esperado = json.loads((suite / "esperado.json").read_text(encoding="utf-8"))
+    esperado = cargar_esperado(suite)
     if salida.exists():
         shutil.rmtree(salida)
     salida.mkdir(parents=True)
