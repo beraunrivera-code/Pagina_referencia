@@ -36,6 +36,12 @@ exec_with_display() {
     if has_display; then
         exec "$@"
     elif command -v xvfb-run >/dev/null 2>&1; then
+        if [[ $$ -eq 1 ]]; then
+            # PID 1 del contenedor: xvfb-run espera la señal SIGUSR1 de Xvfb y, como init,
+            # nunca le llega (se colgaba indefinidamente). Como hijo de este shell sí funciona.
+            xvfb-run -a "$@"
+            exit $?
+        fi
         exec xvfb-run -a "$@"
     else
         echo "[ERROR] Sin \$DISPLAY y sin xvfb-run: instala xvfb para las pruebas de interfaz." >&2

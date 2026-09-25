@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "Sistema MD · prueba técnica en otra PC",
-  "created_utc": "2026-09-24T22:03:49.931005+00:00",
+  "created_utc": "2026-09-25T05:20:11.419729+00:00",
   "files": {
     ".dockerignore": "d2f03a93a7d5405f893e8e8442e94430fa7dd74eafd1dea84cfd69980840e1ee",
     ".gitignore": "6ab95e86bdfb74448d504f7b8152ab3ce6112888e269d9cc25a80d8c7c635911",
@@ -109,7 +109,7 @@
     "app/workers/prepare_markitdown.py": "2ed112bc3928c370919b37bf83e102ad83aa6c14ba8c73ab7caa341c80b9eace",
     "app/workers/requirements-markitdown-linux-py312.lock": "1888800a6d78edfd4862cb2e3b55cb38bc516ed411bf1f3d8612ad7b701133b1",
     "app/workers/requirements-markitdown-win-py312.lock": "292f0c3c56569d1e1b0f5c133579868e7b7a955314c1dc6cc588ac3806f8c45e",
-    "entrypoint.sh": "73046c69819e4a772f91a3c6f65dec226ee394d20dc1b5538c94a7d354bfbb17",
+    "entrypoint.sh": "f2944ec691c66c9a307285c48b6434f044d1a1b35cb9b98886daf1f98ecd180b",
     "iniciar.py": "d7322b3310abc3c3486661147438bfc77f710f48bee6cfd6f2ebd62d92b71f31",
     "preparar_equipo.py": "443ec6e091addd44d9800839adc15fa50a7fa2d5bfbc3120011a805a2b06b45a",
     "requirements-local.txt": "0d32273f51c7382f86f2b5510e616e3a5ef68717a4b771274eee188ff2c446ef",
