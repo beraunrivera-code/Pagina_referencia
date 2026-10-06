@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "Sistema MD · prueba técnica en otra PC",
-  "created_utc": "2026-09-25T15:40:21.516272+00:00",
+  "created_utc": "2026-10-06T14:30:11.075654+00:00",
   "files": {
     ".dockerignore": "37254c1a8b1cfe1f7559b35f66db028ca97d4a945bbe8b8e61d4485a47eebe11",
     ".gitignore": "fc280a58fa37e405fb9725ef1ba74c856046a3d6b00ed5addbe41dab8138daf9",
@@ -12,6 +12,7 @@
     "GUIA_PRUEBA_OTRA_PC.md": "401eec8fbdada6579393b6cf1e4cfec6f6947895b96eef5e715ce18fa894d767",
     "INICIO_RAPIDO.md": "742676ca349ad5ccb060fe9be86d2a1ef5185d12dc4f7b5cadbc8d2c86018bd9",
     "INVESTIGACION_MOTORES_LOCAL_API.md": "59866fb4139eff40b286344aa6b77801d8462c503fc6b46524a13ed6199c2099",
+    "LABORATORIO.md": "b02d7f5c53ab9303f5127a3d0f31c9d6cab68473914f0061481a571c2e49478d",
     "LEEME_PRIMERO.md": "ae530900959be628f0a80de63e9f430ed1b4ea10fb4684c655da54c864ff69d4",
     "LOOP_EVALUACION.md": "12419b5f675603dcbc029578e65136a2bf1af4f67e0bd08eedfd0acf52158290",
     "PENDIENTES_MEJORA.md": "94689bf0c1eaed02acb391d8460c00cca514e83184e71befaccdcb5e12ee4879",
